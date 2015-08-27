@@ -59,14 +59,14 @@ void xAna_hh(std::string inputFile){
 	//cuts for leading jets
 
     	if(fatjetCISVV2[ij] < 0.605)continue;
-    	if(fatjetCISVV2[ij] > 1)continue; //this is the b-tagging for the fat jets
+    	if(fatjetCISVV2[ij] > 1)continue; //CSVV2 is to identify the b-jets
 
     	nFatBTag++;
 
       }
     
-    if(nFatBTag>=2)nPass[1]++; //2 or greater fat jets(with cuts and b-tagging) that has b-tagging will be put inside the nPass[1] 
-
+    if(nFatBTag>=2)nPass[1]++; //this is the fat jets b-tagging 
+   
 
     int nSubBTag[2]={0}; // check only the leading two fat jets 
     int nGoodFatJet=0;
@@ -98,7 +98,8 @@ void xAna_hh(std::string inputFile){
 
     // if both fat jets have at least two subjet btags
     if(nSubBTag[0]>1 && nSubBTag[1]>1) nPass[4]++;
-        
+    
+    //nPass[2] to nPass[4] is Subjet b-tagging
 
   } // end of loop over entries
 
@@ -109,7 +110,7 @@ void xAna_hh(std::string inputFile){
     
 }
 /*nPass[0] = for the good vertices
-nPass[1] = leading jets with b-tagging (2 or more)
+nPass[1] = fat jets b-tagging
 nPass[2] = both fat jets that has at least one subjet b-tag
 nPass[3] = one of the fat jets that have at least two subjet b-tag
 nPass[4] = both fat jets that have at least two subjet b-tag */
