@@ -112,13 +112,13 @@ void xAna_hh(std::string inputFile){
       std::cout << "nPass[" << i << "]= " << nPass[i] << std::endl;
  
   
-  TH1D* h_CutFlow = new TH1D(" ", "Cut Flow for X mass = 4500 " ,6,0,6);
+  TH1D* h_CutFlow = new TH1D(" ", "Cut Flow for X mass = 4500 " ,5,0,5);
 
-  char* cut_name[6] = {"Total","Vertex","FATjet","Subjet1","Subjet2","Subjet3"};
+  char* cut_name[5] = {"Vertex","FATjet","Subjet1","Subjet2","Subjet3"};
   
-  for(int i=1;i<=6;i++){ // i is the index of column of cut flow plot 
-    if(i==1) {h_CutFlow->SetBinContent(i,nTotal); }
-    else {h_CutFlow->SetBinContent(i,nPass[i-2]); }
+  for(int i=1;i<=5;i++){ // i is the index of column of cut flow plot 
+    if(i==1) {h_CutFlow->SetBinContent(i,nPass[0]/nTotal); }
+    else {h_CutFlow->SetBinContent(i,nPass[i-1]/nTotal); }
     h_CutFlow->GetXaxis()->SetBinLabel( i , cut_name[i-1] );
   }
   
