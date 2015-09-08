@@ -108,7 +108,7 @@ void xAna_hh(std::string inputFile,char name) {
       int gg = fatty[g];
       TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
 
-      for(unsigned int h=0; h<fatty.size(); h++) {
+      for(unsigned int h=0; h<g; h++) {
 	int hh = fatty[h];
 	TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
 
