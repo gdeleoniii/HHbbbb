@@ -122,7 +122,7 @@ void xAna_hh(std::string inputFile,char name) {
     if(nSubBTag[0]>1 && nSubBTag[1]>1) nPass[4]++;
 
     vector<double> fatjetM;
-    for(unsigned int g=0; g<leader1.size(); g++) {
+    for(unsigned int g=0; g<fatty.size(); g++) {
       int gg = leader1[g];
       TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
 
