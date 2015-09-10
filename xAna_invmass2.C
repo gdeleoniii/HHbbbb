@@ -23,8 +23,7 @@ void xAna_hh(std::string inputFile,char name) {
   Long64_t nPass[20]={0};
 
   TH1F* h_SD=new TH1F("h_SD","",100,0,200);
-  TH1F* h_FatMass=new TH1F("h_FatMass","",100,0,5000);
- 
+  TH1F* h_FatMass=new TH1F("h_FatMass","",100,500,5000);
  
   //Event loop
   for(Long64_t jEntry=0; jEntry<data.GetEntriesFast() ;jEntry++){
@@ -72,22 +71,6 @@ void xAna_hh(std::string inputFile,char name) {
       }
     
     if(nFatBTag>=2)nPass[1]++;   
-    
-    double MaxPt= 0;
-    int leadjet1 = -99;
-    vector<int> leader1;
-    vector<int> leader2;
-    for(unsigned int x=0; x<fatty.size(); x++) { //for the 1st leading jet
-      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(x);
-      if(thisJet->Pt()>MaxPt) leadjet1 = fatty[x]; 
-      leader1.push_back(x);
-    }
-
-    for(unsigned int y=0; y<fatty.size(); y++) { //for the 2nd leading jet
-      if(fatty[y]==leadjet1)continue;
-      leader2.push_back(y);
-    }
-
 
     int nSubBTag[2]={0}; // check only the leading two fat jets 
     int nGoodFatJet=0;
@@ -122,15 +105,24 @@ void xAna_hh(std::string inputFile,char name) {
     if(nSubBTag[0]>1 && nSubBTag[1]>1) nPass[4]++;
 
     vector<double> fatjetM;
+    double MaxPt1 =   0;
+    double MaxPt2 =   0;
+    int leadjet1  = -99;
+    int leadjet2  = -99;
     for(unsigned int g=0; g<fatty.size(); g++) {
-      int gg = leader1[g];
+      int gg = fatty[g];
       TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
-
+      if(thisJet->Pt()>MaxPt1) leadjet1 = gg;
+      TLorentzVector* LeadJet1 = (TLorentzVector*)fatjetP4->At(leadjet1);
+      
       for(unsigned int h=0; h<g; h++) {
-	int hh = leader2[h];
+	int hh = fatty[h];
+	if(hh==leadjet1)continue;
  	TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
+	if(thatJet->Pt()>MaxPt2) leadjet2 = hh;
+	TLorentzVector* LeadJet2 = (TLorentzVector*)fatjetP4->At(leadjet2);
 
-	Float_t mff = (*thisJet+*thatJet).M();
+	Float_t mff = (*LeadJet1+*LeadJet2).M();
 	fatjetM.push_back(mff);
       }
     }
@@ -145,12 +137,12 @@ void xAna_hh(std::string inputFile,char name) {
   for(int i=0;i<20;i++)
     if(nPass[i]>0)
       std::cout << "nPass[" << i << "]= " << nPass[i] << std::endl;
+ 
 
   h_FatMass->Draw();
   
   TFile* outfile0 = new TFile(Form("fatmass_%d.root",name),"recreate");
   h_FatMass->Write("invmass");
   outfile0->Write();
-
 
 }
