@@ -104,32 +104,15 @@ void xAna_hh(std::string inputFile,char name) {
     // if both fat jets have at least two subjet btags
     if(nSubBTag[0]>1 && nSubBTag[1]>1) nPass[4]++;
 
-    vector<double> fatjetM;
-    double MaxPt1 =   0;
-    double MaxPt2 =   0;
-    int leadjet1  = -99;
-    int leadjet2  = -99;
-    for(unsigned int g=0; g<fatty.size(); g++) {
-      int gg = fatty[g];
-      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
-      if(thisJet->Pt()>MaxPt1) leadjet1 = gg;
-      TLorentzVector* LeadJet1 = (TLorentzVector*)fatjetP4->At(leadjet1);
-      
-      for(unsigned int h=0; h<g; h++) {
-	int hh = fatty[h];
-	if(hh==leadjet1)continue;
- 	TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
-	if(thatJet->Pt()>MaxPt2) leadjet2 = hh;
-	TLorentzVector* LeadJet2 = (TLorentzVector*)fatjetP4->At(leadjet2);
+    if(fatty.size()<2)continue;
 
-	Float_t mff = (*LeadJet1+*LeadJet2).M();
-	fatjetM.push_back(mff);
-      }
-    }
+    Int_t gg = fatty[0];
+    Int_t hh = fatty[1];
+    TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
+    TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
 
-    for(unsigned int g=0; g<fatjetM.size(); g++) {
-      h_FatMass->Fill(fatjetM[g]);
-    }
+    Float_t mff = (*thatJet+*thisJet).M();
+    h_FatMass->Fill(mff);
 
   } // end of loop over entries
 
