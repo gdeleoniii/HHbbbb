@@ -112,23 +112,15 @@ void xAna_hh(std::string inputFile,char name) {
     // if both fat jets have at least two subjet btags
     if(nSubBTag[0]>1 && nSubBTag[1]>1) nPass[4]++;
 
-    vector<double> fatjetM;
-    for(unsigned int g=0; g<fatty.size(); g++) {
-      int gg = fatty[g];
-      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
+    if(fatty.size()<2)continue;
 
-      for(unsigned int h=0; h<g; h++) {
-	int hh = fatty[h];
-	TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
+    Int_t gg = fatty[0];
+    Int_t hh = fatty[1];
+    TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
+    TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
 
-	Float_t mff = (*thisJet+*thatJet).M();
-	fatjetM.push_back(mff);
-      }
-    }
-
-    for(unsigned int g=0; g<fatjetM.size(); g++) {
-      h_FatMass->Fill(fatjetM[g]);
-    }
+    Float_t mff = (*thatJet+*thisJet).M();
+    h_FatMass->Fill(mff);
 
   } // end of loop over entries
 
