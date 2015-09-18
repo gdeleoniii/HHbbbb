@@ -9,15 +9,18 @@
 #include <TH1D.h>
 #include <TFile.h>
 #include <TF1.h>
+#include <TLegend.h>
 #include "untuplizer.h"
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
+
 
 //for fitting
 Double_t fitFunc(Double_t* v, Double_t* par) {
 Double_t x=v[0];
 return par[0]*TMath::Gaus(x,par[1],par[2]);
 } 
+
 
 using namespace std;
 void xAna_hh(std::string inputFile,char name) {
@@ -30,7 +33,9 @@ void xAna_hh(std::string inputFile,char name) {
 
   TH1F* h_SD=new TH1F("h_SD","",100,0,200);
   TH1F* h_FatMass=new TH1F("h_FatMass","",100,0,5000);
- 
+  TH1F* h_leadjet=new TH1F("","",80,80,180);
+  TH1F* h_subleadjet=new TH1F("","",80,80,180); 
+
   Double_t fitFunc(Double_t*, Double_t*); //for fitting
  
   //Event loop
@@ -59,16 +64,16 @@ void xAna_hh(std::string inputFile,char name) {
     vector<float>   *subjetSDPz  =  data.GetPtrVectorFloat("FATsubjetSDPz", nFATJet);
     vector<float>   *subjetSDE   =  data.GetPtrVectorFloat("FATsubjetSDCE", nFATJet);
     vector<bool>    &passFatJetLooseID = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
-
+    
     vector<int> fatty;
     int nFatBTag=0;
     for(int ij=0; ij<nJets; ij++)
       {
     	
      	TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
-    	if(thisJet->Pt()<30)continue;
+    	if(thisJet->Pt()<300)continue;
     	if(fabs(thisJet->Eta())>2.5)continue;
-    	if(fatjetSDmass[ij]<95 || fatjetSDmass[ij]>145)continue;
+	if(fatjetSDmass[ij]<95 || fatjetSDmass[ij]>145)continue;
 	if(!passFatJetLooseID[ij])continue;
 
     	if(fatjetCISVV2[ij] < 0.605)continue;
@@ -78,12 +83,11 @@ void xAna_hh(std::string inputFile,char name) {
 	fatty.push_back(ij);
       }
     
-    if(nFatBTag>=2)nPass[1]++;
-
+    if(nFatBTag>=2)nPass[1]++;   
+    
     int nSubBTag[2]={0}; // check only the leading two fat jets 
     int nGoodFatJet=0;
-    for(int ij=0; ij<nJets; ij++)
-      {
+    for(int ij=0; ij<nJets; ij++) {
     	
 	TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
 	if(thisJet->Pt()<30)continue;
@@ -91,16 +95,16 @@ void xAna_hh(std::string inputFile,char name) {
 	if(fatjetSDmass[ij]<95 || fatjetSDmass[ij]>145)continue;
 	if(!passFatJetLooseID[ij])continue;
 
-      	for(int is=0; is < nSubSoftDropJet[ij]; is++){
+      	for(int is=0; is < nSubSoftDropJet[ij]; is++) {
 	  if(subjetSDCSV[ij][is] < 0.605)continue;
 	  if(nGoodFatJet<2)
 	  nSubBTag[nGoodFatJet]++;
 	  
       	}
-
+	
 	nGoodFatJet++;
-      }
-  
+    }
+    
     
     // if each fat jet has at least one subjet btag
     if(nSubBTag[0]>0 && nSubBTag[1]>0)nPass[2]++;
@@ -111,35 +115,37 @@ void xAna_hh(std::string inputFile,char name) {
 
     // if both fat jets have at least two subjet btags
     if(nSubBTag[0]>1 && nSubBTag[1]>1) nPass[4]++;
-
+    
     if(fatty.size()<2)continue;
 
-    Int_t gg = fatty[0];
-    Int_t hh = fatty[1];
-    TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(gg);
-    TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(hh);
+    Int_t lead = fatty[0]; //first leading jet
+    Int_t sublead = fatty[1]; //second leading jet
+
+    TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(lead);
+    TLorentzVector* thatJet = (TLorentzVector*)fatjetP4->At(sublead);
 
     Float_t mff = (*thatJet+*thisJet).M();
     h_FatMass->Fill(mff);
-
+        
   } // end of loop over entries
-
+  
   std::cout << "nTotal    = " << nTotal << std::endl;
   for(int i=0;i<20;i++)
     if(nPass[i]>0)
       std::cout << "nPass[" << i << "]= " << nPass[i] << std::endl;
- 
+
+  
   //for fitting
-  TF1* fitRatio = new TF1("fitRatio",fitFunc, 900, 5000, 3);
-  fitRatio->SetParameters(1000000,4500, 20);
+  TF1* fitRatio = new TF1("fitRatio",fitFunc, 0, 5000, 3);
+  fitRatio->SetParameters(50000,4500,0.05*4500);
   fitRatio->SetParNames("Amplitude","Mean","Sigma");
-  h_FatMass->Fit("fitRatio","","",700,5000);
+  h_FatMass->Fit("fitRatio");  
 
   h_FatMass->SetTitle("4500");  
   h_FatMass->Draw();
-  
-  TFile* outfile0 = new TFile(Form("fatmass_%d.root",name),"recreate");
-  h_FatMass->Write("invmass");
-  outfile0->Write();
+
+  TFile* outfile = new TFile(Form("fit_%d.root",name),"recreate");
+  h_FatMass->Write("fit");
+  outfile->Write();
 
 }
