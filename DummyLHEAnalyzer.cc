@@ -162,8 +162,8 @@ public:
         h_C3[i] -> SetXTitle(Form("M(Boson %d) [GeV]",i));
         h_C3[i]-> Sumw2();
 
-        h_C4[i] = (TH1F*)h_y->Clone(Form("h_By%d",i));
-        h_C4[i] -> SetXTitle(Form("Rapidity of Boson %d",i));
+        h_C4[i] = (TH1F*)h_y->Clone(Form("hC_By%d",i));
+        h_C4[i] -> SetXTitle(Form("Rapidity of Boson %d with cut",i));
 
 	h_D_dR[i] =(TH1F*)h_dR->Clone(Form("h_D_dR%d",i));
 	h_D_dR[i]->SetXTitle(Form("#Delta R between the Daughters of Boson %d",i));
@@ -371,8 +371,8 @@ private:
       
   void endJob(){
     output->cd();
-    std::cout << "Events before selection = " << counter_denominator << std::endl;
-    std::cout << "Events after selection = " << counter_numerator <<std::endl;
+    //std::cout << "Events before selection = " << counter_denominator << std::endl;
+    //std::cout << "Events after selection = " << counter_numerator <<std::endl;
 
     h_Xpt->Write();
     h_Xpz->Write();
@@ -410,6 +410,8 @@ private:
 
     output->Write();
     output->Close();
+    std::cout << "Events before selection = " << counter_denominator << std::endl;                                   
+    std::cout << "Events after selection = " << counter_numerator <<std::endl;
   }   
 
   void beginRun(edm::Run const& iRun, edm::EventSetup const& es){
