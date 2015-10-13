@@ -371,8 +371,6 @@ private:
       
   void endJob(){
     output->cd();
-    //std::cout << "Events before selection = " << counter_denominator << std::endl;
-    //std::cout << "Events after selection = " << counter_numerator <<std::endl;
 
     h_Xpt->Write();
     h_Xpz->Write();
