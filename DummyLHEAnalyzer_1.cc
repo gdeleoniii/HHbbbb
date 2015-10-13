@@ -25,8 +25,6 @@ private:
 
   TFile * output;
 
-  long int counter_denominator;
-  long int counter_numerator;
 
   TH1F* h_p;
   TH1F* h_pz;
@@ -61,10 +59,9 @@ private:
   TH1F* h_cosThetaStar; // Boson scattering angle in the X rest frame
   TH1F* h_cosTheta[2]; //Daugher scattering angle in the Boson 1 rest frame
   TH1F* h_cosPhi; // angle between two decay planes
-  TH1F* h_C1[2];
-  TH1F* h_C2[2];
-  TH1F* h_C3[2];
-  TH1F* h_C4[2];
+  TH1F* h_A1[2][2];
+  TH1F* h_A2[2][2];
+  TH1F* h_A3[2][2];
 
 public:
   explicit DummyLHEAnalyzer( const edm::ParameterSet & cfg ) : 
@@ -78,9 +75,6 @@ public:
   }
   void beginJob(){
     output = new TFile(fileName_.data(), "RECREATE");
-
-    counter_denominator = 0;
-    counter_numerator = 0;
 
     h_p = new TH1F("h_p","",125,0,2500);
     h_p->Sumw2();
@@ -150,21 +144,6 @@ public:
 	h_By[i] = (TH1F*)h_y->Clone(Form("h_By%d",i));
 	h_By[i] -> SetXTitle(Form("Rapidity of Boson %d",i));
 
-	h_C1[i] = (TH1F*)h_p->Clone(Form("hC_Bpt%d",i));
-        h_C1[i]->SetTitle(Form("Boson %d with cut",i));
-        h_C1[i]->SetXTitle(Form("p_{T}(Boson %d) [GeV]",i));
-
-        h_C2[i] = (TH1F*)h_pz->Clone(Form("hC_Bpz%d",i));
-        h_C2[i]->SetTitle(Form("Boson %d with cut",i));
-        h_C2[i]->SetXTitle(Form("p_{z}(Boson %d) [GeV]",i));
-	
-	h_C3[i] = new TH1F(Form("hC_Bm%d",i), Form("Boson %d with cut",i), 100,50,150);
-        h_C3[i] -> SetXTitle(Form("M(Boson %d) [GeV]",i));
-        h_C3[i]-> Sumw2();
-
-        h_C4[i] = (TH1F*)h_y->Clone(Form("h_By%d",i));
-        h_C4[i] -> SetXTitle(Form("Rapidity of Boson %d",i));
-
 	h_D_dR[i] =(TH1F*)h_dR->Clone(Form("h_D_dR%d",i));
 	h_D_dR[i]->SetXTitle(Form("#Delta R between the Daughters of Boson %d",i));
 
@@ -189,6 +168,16 @@ public:
 	    h_Dy[i][j]  = (TH1F*)h_y->Clone(Form("h_Dy%d_%d",i,j));
 	    h_Dy[i][j] -> SetXTitle(Form("Rapidity of Daughter %d of Boson %d",j,i));
 
+	    h_A1[i][j] =(TH1F*)h_p->Clone(Form("hA_Dpt%d_%d",i,j));
+            h_A1[i][j]->SetTitle(Form("Daughter %d of Boson %d A",j,i));
+            h_A1[i][j]->SetXTitle(Form("p_{T}(Daughter %d)[GeV]",j));
+
+            h_A2[i][j] =(TH1F*)h_pz->Clone(Form("hA_Dpz%d_%d",i,j));
+            h_A2[i][j]->SetTitle(Form("Daughter %d of Boson %d A",j,i));
+            h_A2[i][j]->SetXTitle(Form("p_{z}(Daughter %d)[GeV]",j));
+
+            h_A3[i][j]  =(TH1F*)h_y->Clone(Form("hA_Dy%d_%d",i,j));
+            h_A3[i][j]->SetXTitle(Form("Rapidity of Daughter %d of Boson %d A",j,i));
 	  }
     
       }
@@ -212,8 +201,6 @@ private:
     const std::vector<lhef::HEPEUP::FiveVector> pup_ = hepeup_.PUP;
     const std::vector<int> istup_ = hepeup_.ISTUP;
     const std::vector<std::pair< int,int > > motup_ = hepeup_.MOTHUP;
-
-    counter_denominator++;
 
     std::vector<TLorentzVector> l4_vector;
     bool gluonFusion=false;
@@ -265,36 +252,38 @@ private:
 
     float NmaxPt= -9999.0;
     float NsecondPt= -9999.0;
-    int maxindex = -1;
-    TLorentzVector leadjet[2];
-    TLorentzVector subljet[2];
-    TLorentzVector l4_C[2];
+    int maxindexi = -1;
+    int maxindexj = -1;
+    TLorentzVector leadjet[2][2];
+    TLorentzVector subljet[2][2];
+    TLorentzVector l4_A[2][2];
 
     for(int i=0;i<2;i++) {
-      if(l4_B[i].Pt() > NmaxPt) {
-	  NmaxPt = l4_B[i].Pt();
-	  leadjet[i] = l4_B[i];
-	  i = maxindex;
+      for(int j=0;j<2;j++) {
+	if(l4_d[i][j].Pt() > NmaxPt) {
+	  NmaxPt = l4_d[i][j].Pt();
+	  leadjet[i][j] = l4_d[i][j];
+	  i = maxindexi;
+	  j = maxindexj;
 	}
-	if(l4_B[i].Pt() > NsecondPt) {
-	  if(i == maxindex)continue;
-	  NsecondPt = l4_B[i].Pt();
-	  subljet[i] = l4_B[i];
+	if(l4_d[i][j].Pt() > NsecondPt) {
+	  if(i == maxindexi)continue;
+	  if(j == maxindexj)continue;
+	  NsecondPt = l4_d[i][j].Pt();
+	  subljet[i][j] = l4_d[i][j];
 	}
-	
-	l4_C[i] =leadjet[i] + subljet[i];
-	
-	if(l4_C[i].Pt() < 30)continue;
-	if(fabs(l4_C[i].Eta()) > 2.5)continue;	
-	float deta_A = fabs(leadjet[i].Eta() - subljet[i].Eta());
-	if(deta_A > 1.3)continue;
-	
-	counter_numerator++;
 
-	h_C1[i]->Fill(l4_C[i].Pt(),weight);
-	h_C2[i]->Fill(l4_C[i].Pz(),weight);
-	h_C3[i]->Fill(l4_C[i].M(),weight);
-	h_C4[i]->Fill(l4_C[i].Rapidity(),weight);
+	if(leadjet[i][j].Pt() < 30 && subljet[i][j].Pt() < 30)continue;
+	if(fabs(leadjet[i][j].Eta()) > 2.5 && fabs(subljet[i][j].Eta()) > 2.5)continue;
+	float deta_A = fabs(leadjet[i][j].Eta() - subljet[i][j].Eta());
+	if(deta_A > 1.3)continue;
+
+	l4_A[i][j] = leadjet[i][j] + subljet[i][j];
+
+	h_A1[i][j]->Fill(l4_A[i][j].Pt(),weight);
+	h_A2[i][j]->Fill(l4_A[i][j].Pz(),weight);
+	h_A3[i][j]->Fill(l4_A[i][j].Rapidity(),weight);
+      }
     }
 
     TLorentzVector l4boost_B[2];
@@ -318,6 +307,8 @@ private:
 
     double costhetastar = TMath::Cos(l4boost_B[0].Vect().Angle(l4_X.Vect()));
     h_cosThetaStar->Fill(costhetastar,weight);
+    
+
 
     // these codes apply only to DM model where the last two daughters are dark matters
     // the first boson has a known mass
@@ -371,9 +362,6 @@ private:
       
   void endJob(){
     output->cd();
-    std::cout << "Events before selection = " << counter_denominator << std::endl;
-    std::cout << "Events after selection = " << counter_numerator <<std::endl;
-
     h_Xpt->Write();
     h_Xpz->Write();
     h_Xm->Write();
@@ -385,6 +373,8 @@ private:
 
     h_B_dEta->Write();
 
+    //h_A1->Write();
+    //h_A2->Write();
 
     for(int i=0; i<2; i++){
       h_Bpt[i]->Write();
@@ -392,10 +382,6 @@ private:
       h_Bm[i]->Write();
       h_BmT[i]->Write();
       h_By[i]->Write();
-      h_C1[i]->Write();
-      h_C2[i]->Write();
-      h_C3[i]->Write();
-      h_C4[i]->Write();
       h_D_dEta[i]->Write();
       h_D_dR[i]->Write();
       h_cosTheta[i]->Write();
@@ -404,6 +390,9 @@ private:
 	h_Dpt[i][j]->Write();
 	h_Dpz[i][j]->Write();
 	h_Dy[i][j]->Write();
+	h_A1[i][j]->Write();
+	h_A2[i][j]->Write();
+	h_A3[i][j]->Write();
       }
 
     }
