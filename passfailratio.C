@@ -27,12 +27,17 @@ using namespace std;
 void passfailratio(std::string inputFile, std::string name) {
 
   int total = 0;
+  //read the ntuples (in pcncu)
 
   std::vector<string> infiles;
 
   readSample(inputFile, infiles);
     
   TreeReader data(infiles);
+    
+  //TH2F* h1=new TH2F("","",28,60,200,20,-1,1);
+  //TH1F* h2=new TH1F("","",28,60,200);
+  //h1->Sumw2();
 
   float xbins1[] = {-75,-45,-20,10,40,75};
   const int nbins1=sizeof(xbins1)/sizeof(xbins1[0])-1;
@@ -46,7 +51,6 @@ void passfailratio(std::string inputFile, std::string name) {
 
   Long64_t npass2[34] = {0};
   Long64_t nfail2[34] = {0};
-  Long64_t counter[20] = {0};
   
   Long64_t DENOM = 0;
 
@@ -57,7 +61,7 @@ void passfailratio(std::string inputFile, std::string name) {
       fprintf(stderr, "Processing event %lli of %lli\n", jEntry + 1, data.GetEntriesFast());
     
     data.GetEntry(jEntry);
-    /* 
+    
     int nFATJet         = data.GetInt("FATnJet");
     const int nFJets=nFATJet;
     TClonesArray* fatjetP4 = (TClonesArray*) data.GetPtrTObject("FATjetP4");
@@ -73,27 +77,13 @@ void passfailratio(std::string inputFile, std::string name) {
     Float_t  mcWeight  = data.GetFloat("mcWeight");
     Float_t HT         = data.GetFloat("HT");
     //Float_t*  fatjet_doubleSV = data.GetPtrFloat("FATjet_DoubleSV");
-  
+    
     int nADDJet         = data.GetInt("ADDnJet");
     const int nAJets=nADDJet;
     TClonesArray* addjetP4 = (TClonesArray*) data.GetPtrTObject("ADDjetP4");
     Float_t*  addjet_doubleSV = data.GetPtrFloat("ADDjet_DoubleSV");
-*/    
+    
 
-    int nFATJet         = data.GetInt("nFatjetAK08ungroomed");
-    const int nFJets=nFATJet;
-    Float_t*  FatjetMass = data.GetPtrFloat("FatjetAK08ungroomed_mass");
-    Float_t*  FatjetPRmass = data.GetPtrFloat("FatjetAK08ungroomed_mpruned");
-    Float_t*  FatjetPt = data.GetPtrFloat("FatjetAK08ungroomed_pt");
-    Float_t*  FatjetEta = data.GetPtrFloat("FatjetAK08ungroomed_eta");
-    Float_t*  FatjetIDTight = data.GetPtrFloat("FatjetAK08ungroomed_id_Tight");
-    Float_t*  FatjetPRmassCorr = data.GetPtrFloat("FatjetAK08ungroomed_mprunedcorr");
-    Float_t*  FatjetTau1 = data.GetPtrFloat("FatjetAK08ungroomed_tau1");
-    Float_t*  FatjetTau2 = data.GetPtrFloat("FatjetAK08ungroomed_tau2");
-    Float_t*  FatjetDBT = data.GetPtrFloat("FatjetAK08ungroomed_bbtag");
-    //Int_t* HLT_PFHT800 = data.GetPtrInt("HLT_BIT_HLT_PFHT800_v");
-
-    /*
     std::string* trigName = data.GetPtrString("hlt_trigName");
     vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
     const Int_t nsize = data.GetPtrStringSize();
@@ -122,9 +112,7 @@ void passfailratio(std::string inputFile, std::string name) {
     //3. has a good vertex
     Int_t nVtx        = data.GetInt("nVtx");
     if(nVtx<1)continue;
-    */
 
-    /*
     vector<int> fatjet;
     vector<pair<int,int>> Mjj;
     for(int ij=0; ij<nFJets; ij++) {
@@ -142,41 +130,8 @@ void passfailratio(std::string inputFile, std::string name) {
     }
     
     if(fatjet.size()<2)continue;
-    */
-    counter[0]++;
-
-    //if(!HLT_PFHT800)continue;
-
-    counter[1]++;
-
-    vector<int> fatjet;
-    for(int ij=0;ij<nFJets; ij++) {
-      if(FatjetPt[ij]<200)continue;
-      if(fabs(FatjetEta[ij])>2.4)continue;
-      if(!FatjetIDTight[ij])continue;
-      if(FatjetPRmassCorr[ij]<60 || FatjetPRmassCorr[ij]>200)continue;
-  
-      Double_t tau21 = (FatjetTau2[ij]/FatjetTau1[ij]);
-      if(tau21>0.6)continue;
-
-      fatjet.push_back(ij);
-    }
-  
-    if(fatjet.size()<2)continue;
-    counter[2]++;
-
-    int lead = fatjet[0];
-    int subl = fatjet[1];
-
-    Float_t DelEta = fabs(FatjetEta[lead]-FatjetEta[subl]);
-    if(DelEta>1.3)continue;
-    Float_t mjj = FatjetPRmass[lead]+FatjetPRmass[subl];
-    Float_t msubt = mjj-(FatjetPRmass[lead]-125)-(FatjetPRmass[subl]-125);
-    if(msubt<800)continue;
-
-    counter[3]++;
-
-    /*
+    
+    
     for(unsigned int i=0; i<fatjet.size(); i++) {
       for(unsigned int j=0; j<i; j++) {
         int index_that = fatjet[i];
@@ -194,16 +149,17 @@ void passfailratio(std::string inputFile, std::string name) {
       }
     }
 
+    
     if(Mjj.size()<1)continue;   
 
     int aa = Mjj[0].second;
     int ee = Mjj[0].first;
     TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa); 
     TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
-    */
-
-    /*
+  
+    
     Float_t mff=(*Jet1+*Jet2).M();
+
     Float_t msubt = mff-(fatjetPRmass[aa]-125)-(fatjetPRmass[ee]-125);
     if(msubt<800)continue;
     //Double_t leadtau21 = (fatjetTau2[aa]/fatjetTau1[aa]);
@@ -216,9 +172,9 @@ void passfailratio(std::string inputFile, std::string name) {
       if(Jet2->DeltaR(*Jet3)<0.1 && addJetIndex[1] < 0) { addJetIndex[1]=ad;} // first add jet to pass the delta r cut
     }
     if(addJetIndex[0]<0 || addJetIndex[1]<0)continue;
-    */
 
-    h4->Fill(FatjetPRmass[lead]);
+
+    h4->Fill(fatjetPRmass[aa]);
 
     DENOM+= 1;
     Float_t bin1= 40;
@@ -226,9 +182,9 @@ void passfailratio(std::string inputFile, std::string name) {
 
 
     for(int i = 0; i <34; i++) {
-      if(FatjetPRmass[lead]>bin1 && FatjetPRmass[lead]<bin2) {
-	if(FatjetDBT[lead]>0.6)npass2[i]++;
-	else if(FatjetDBT[subl]<0.6)nfail2[i]++;
+      if(fatjetPRmass[aa]>bin1 && fatjetPRmass[aa]<bin2) {
+	if(addjet_doubleSV[addJetIndex[0]]>0.6)npass2[i]++;
+	else if(addjet_doubleSV[addJetIndex[0]]<0.6)nfail2[i]++;
       }
       bin1+=5;
       bin2+=5;
@@ -236,15 +192,13 @@ void passfailratio(std::string inputFile, std::string name) {
     
 
 
-    if(FatjetPRmass[lead]>105 && FatjetPRmass[lead]<135)continue;
-    if(FatjetDBT[lead]>0.6)h1->Fill(FatjetPRmass[lead]-125);
-    else if(FatjetDBT[lead]<0.6)h2->Fill(FatjetPRmass[lead]-125);
+    if(fatjetPRmass[aa]>105 && fatjetPRmass[aa]<135)continue;
+    if(addjet_doubleSV[addJetIndex[0]]>0.6)h1->Fill(fatjetPRmass[aa]-125);
+    else if(addjet_doubleSV[addJetIndex[0]]<0.6)h2->Fill(fatjetPRmass[aa]-125);
 
   } //end of the event loop
-
   cout<<"entries="<<total<<endl;
   cout<<"events="<<DENOM<<endl;
-  cout<<counter[0]<< " "<<counter[1]<<" "<<counter[2]<<" "<<counter[3]<<endl;
   Float_t bin3= 40;
   Float_t bin4= 45;
 
@@ -257,7 +211,7 @@ void passfailratio(std::string inputFile, std::string name) {
 
   h3->Divide(h1,h2);
   
-  TFile* outfile = new TFile(Form("%s_passfailratio.3.4.root",name.data()),"recreate");
+  TFile* outfile = new TFile(Form("%s_passfailratio.3.3.root",name.data()),"recreate");
   h1->Write("pass");
   h2->Write("fail");
   h3->Write("pfratio");
