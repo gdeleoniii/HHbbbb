@@ -46,10 +46,10 @@ void plotMultiGraphs(){
 	ifstream fin;
 	fin.open(Form("%s_%s.dat",prefix[i].data(),name[j].data()));
 	
-	float mean[9],meanerr[9],RMS[9],RMSerr[9];
-	float rel[9], relerr[9];
-	float masserr[9];
-	for(int il=0; il<9; il++)
+	float mean[11],meanerr[11],RMS[11],RMSerr[11];
+	float rel[11], relerr[11];
+	float masserr[11];
+	for(int il=0; il<11; il++)
 	  {
 	    fin >> mean[il] >> meanerr[il] >> RMS[il] >> RMSerr[il];
 	    masserr[il]=100;
@@ -57,7 +57,7 @@ void plotMultiGraphs(){
 	fin.close();
 
 	
-	graph_mean[j] = new TGraphErrors(9,mass,mean,masserr,meanerr);
+	graph_mean[j] = new TGraphErrors(11,mass,mean,masserr,meanerr);
 	graph_mean[j]->SetName(Form("gr_Mean_%d",j));
 	graph_mean[j]->SetMarkerStyle(MARKERS[j]);
 	graph_mean[j]->SetMarkerColor(COLORS[j]);
@@ -67,7 +67,7 @@ void plotMultiGraphs(){
 
 	
 	
-	graph_RMS[j] = new TGraphErrors(9,mass,RMS,masserr,RMSerr);
+	graph_RMS[j] = new TGraphErrors(11,mass,RMS,masserr,RMSerr);
 	graph_RMS[j]->SetName(Form("gr_RMS_%d",j));
 	graph_RMS[j]->SetMarkerStyle(MARKERS[j]);
 	graph_RMS[j]->SetMarkerColor(COLORS[j]);
@@ -78,7 +78,7 @@ void plotMultiGraphs(){
 	ifstream fin2;
 	fin2.open(Form("rel_%s_%s.dat",prefix[i].data(),name[j].data()));
 	
-	for(int il=0; il<9; il++)
+	for(int il=0; il<11; il++)
 	  {
 	    fin2 >> mean[il] >> meanerr[il] >> RMS[il] >> RMSerr[il];
 	    float yield = RMS[il]/mean[il];
@@ -90,7 +90,7 @@ void plotMultiGraphs(){
 	fin2.close();
 
 	
-	graph_RMSMean[j] = new TGraphErrors(9,mass,rel,masserr,relerr);
+	graph_RMSMean[j] = new TGraphErrors(11,mass,rel,masserr,relerr);
 	graph_RMSMean[j]->SetName(Form("gr_RMSMean_%d",j));
 	graph_RMSMean[j]->SetMarkerStyle(MARKERS[j]);
 	graph_RMSMean[j]->SetMarkerColor(COLORS[j]);
