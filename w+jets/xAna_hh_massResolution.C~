@@ -81,7 +81,7 @@ void xAna_hh_massResolution(std::string inputFile, bool matchb=false, bool debug
   const int nHistos=3;
 
   TH1F* h_massDiff = new TH1F("h_massDiff","",100,-0.5,0.5);
-  TH1F* h_mass     = new TH1F("h_mass","",35,40,110);
+  TH1F* h_mass     = new TH1F("h_mass","",100,0,200);
   //TH1F* h_mass     = new TH1F("h_mass","",100,62.5,187.5);
 
   TH1F* h_SD[nHistos];
@@ -187,7 +187,7 @@ void xAna_hh_massResolution(std::string inputFile, bool matchb=false, bool debug
 
     for(int ig=0; ig < nGenPar; ig++){
 
-      if(abs(genParId[ig])!=24)continue; //change to 24?
+      if(genParId[ig]!=24)continue; //change to 24?
       
       int da1_pid = abs(genDa1[ig]);
       int da2_pid = abs(genDa2[ig]);
