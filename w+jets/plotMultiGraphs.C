@@ -109,7 +109,7 @@ void plotMultiGraphs(){
     mg->Draw("AP");
     mg->GetXaxis()->SetTitle("M_{bulkG} [GeV]");
     mg->GetYaxis()->SetTitleOffset(1.1);
-    mg->GetYaxis()->SetTitle("Mean of (Mass-125)/125");
+    mg->GetYaxis()->SetTitle("Mean of (Mass-80)/80");
     mg->GetYaxis()->SetRangeUser(-0.3,0.2);
     
     TLegend* leg = new TLegend(0.148,0.634,0.397,0.877);
@@ -138,7 +138,7 @@ void plotMultiGraphs(){
     mg_h->Draw("AP");
     mg_h->GetXaxis()->SetTitle("M_{bulkG} [GeV]");
     mg_h->GetYaxis()->SetTitleOffset(1.1);
-    mg_h->GetYaxis()->SetTitle("RMS of (Mass-125)/125");
+    mg_h->GetYaxis()->SetTitle("RMS of (Mass-80)/80");
     mg_h->GetYaxis()->SetRangeUser(0.08,0.25);
     
     leg->Draw("same");

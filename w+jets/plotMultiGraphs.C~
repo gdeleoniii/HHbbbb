@@ -24,7 +24,7 @@ void plotMultiGraphs(){
   std::string name[]={"SD","SDCorr","SDCorrThea","PR","PRCorr"};
 
   const int NTYPES=5;
-  float mass[9]={1200,1400,1600,1800,2000,2500,3000,4000,4500};
+  float mass[11]={1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4500};
   int MARKERS[6]={20,21,22,23,34,29};
   int COLORS[NTYPES]={1,4,2,kOrange,kGreen+2};
   setNCUStyle(true);
