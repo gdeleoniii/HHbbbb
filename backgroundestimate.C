@@ -187,7 +187,7 @@ void passfailratio(std::string inputFile, std::string name) {
     //------------------------------------------
 
 
-    //if((fatjetPRmass[aa]<105 || fatjetPRmass[aa]>135) && (fatjetPRmass[ee]<105 || fatjetPRmass[ee]>135))continue;
+    if((fatjetPRmass[aa]<105 || fatjetPRmass[aa]>135) && (fatjetPRmass[ee]<105 || fatjetPRmass[ee]>135))continue;
 
     Double_t weight;
     
