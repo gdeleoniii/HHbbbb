@@ -199,17 +199,9 @@ void passfailratio(std::string inputFile, std::string name) {
     //two anti-tag
     else if(addjet_doubleSV[addJetIndex[0]]<0.6 && addjet_doubleSV[addJetIndex[1]]<0.6) {
       h2->Fill(msubt);
-      /*
-      if((fatjetPRmass[aa]-125)>-75 && (fatjetPRmass[aa]-125)<-45) {weight = 0.083432};
-      if((fatjetPRmass[aa]-125)>-45 && (fatjetPRmass[aa]-125)<-20) {weight = 0.0761451};
-      if((fatjetPRmass[aa]-125)>-45 && (fatjetPRmass[aa]-125)<-20) {weight = 0};
-      if((fatjetPRmass[aa]-125)>-45 && (fatjetPRmass[aa]-125)<-20) {weight = 0.0679588};
-      if((fatjetPRmass[aa]-125)>-45 && (fatjetPRmass[aa]-125)<-20) {weight = 0.0688755};
-      */
       weight = (0.0702331)+(-0.000122783)*(fatjetPRmass[aa]-125)+(0.000001644981)*(fatjetPRmass[aa]-125)*(fatjetPRmass[aa]-125);
       //cout<<weight<<endl;
       h3->Fill(msubt,weight);
-      //h4->Fill(msubt,pass_dbt);
     }
     //one anti-tag lead fails and subl pass
     else if(addjet_doubleSV[addJetIndex[0]]<0.6 && addjet_doubleSV[addJetIndex[1]]>0.6) {
