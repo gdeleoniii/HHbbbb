@@ -152,7 +152,7 @@ void makeCorrRoofit2(){
 
 		TF1* f2 = new TF1("f2","[4]*ROOT::Math::crystalball_function(x,[0],[1],[2],[3])");
 		f2->SetParameters(0.15,100,0.2,80,10);
-		th1->Fit("f2","","",30,110);
+		th1->Fit("f2","","",40,100);
 		
 	if(i==0)c1->Print("plotsR/recoBarel.pdf(");
 		else if(i==9)c1->Print("plotsR/recoBarel.pdf)");
@@ -200,7 +200,7 @@ void makeCorrRoofit2(){
 
 		TF1* f2 = new TF1("f2","[4]*ROOT::Math::crystalball_function(x,[0],[1],[2],[3])");
 		f2->SetParameters(0.15,100,0.2,80,10);
-                th1->Fit("f2","","",30,110);
+                th1->Fit("f2","","",40,100);
 		
 	if(i==0)c1->Print("plotsR/recoEndcap.pdf(");
 		else if(i==9)c1->Print("plotsR/recoEndcap.pdf)");
