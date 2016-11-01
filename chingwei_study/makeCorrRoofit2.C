@@ -54,7 +54,7 @@
 
 TCanvas* c1;
 
-//using namespace RooFit ;
+using namespace RooFit ;
 
 void makeCorrRoofit2(){
 	setNCUStyle(true);
@@ -109,7 +109,7 @@ void makeCorrRoofit2(){
 	}
 	
 	
-	//RooRealVar x("x","x",40,150) ;
+	RooRealVar x("x","x",20,150) ;
 	
 	for(int i=0;i<10;i++){
 		TH1D* th1=(TH1D*)tf1[i]->Get(Form("recoBarelMass%.0f",ptBins[i]));
@@ -120,15 +120,15 @@ void makeCorrRoofit2(){
 		th1->SetTitle(Form("%d",masspoint[i]));
 		th1->SetMaximum(th1->GetMaximum()*1.3);
 		
-		/*
+	
 		RooDataHist dh("dh","dh",x,Import(*th1)) ;
-		RooRealVar mean("mean","mean",125,50,150) ;
+		/*RooRealVar mean("mean","mean",125,50,150) ;
 		RooRealVar sigmaR("sigmaR","sigmaR",4,0.1,9) ;
 		RooRealVar sigmaL("sigmaL","sigmaL",10,0.1,18) ;
 		RooBifurGauss Bi("bi","bi",x,mean,sigmaL,sigmaR);
+		*/
 		
-		
-		RooRealVar m0("m0","m0",117,50,150);
+		RooRealVar m0("m0","m0",80,40,100);
 		RooRealVar sig("sigma","sigma",12,0,100);
 		RooRealVar alpha("alpha","alpha",1,0,10);
 		RooRealVar n("n","n",1,0,50);
@@ -138,15 +138,15 @@ void makeCorrRoofit2(){
 		CB.fitTo(dh) ; 
 		CB.plotOn(frame,LineColor(kRed)) ;
 		CB.paramOn(frame,Layout(0.55)) ;
-		mean[4][i]=125/m0.getValV();
-		sigma[4][i]=m0.getError()*(125/m0.getValV())/m0.getValV();
+		mean[4][i]=80/m0.getValV();
+		sigma[4][i]=m0.getError()*(80/m0.getValV())/m0.getValV();
 		//mean[4][i]=125/th1->GetMean();
 		//sigma[4][i]=th1->GetMeanError()/th1->GetMean();
 		//th1->Draw();
 		frame->SetMaximum(th1->GetMaximum()*1.3);
 		frame->Draw() ;
 		//cout<<i<<"="<<mean[4][i]<<endl;
-		*/
+		/*
 		mean[4][i]=80/th1->GetMean();
 		sigma[4][i]=th1->GetMeanError()/th1->GetMean();
 
@@ -154,7 +154,7 @@ void makeCorrRoofit2(){
 
 		f1->SetParameters(10,80,10,10,10);
 		th1->Fit("f1","","",40,100);
-
+		*/
 	if(i==0)c1->Print("plotsR/recoBarel.pdf(");
 		else if(i==9)c1->Print("plotsR/recoBarel.pdf)");
 		else  c1->Print("plotsR/recoBarel.pdf");
@@ -169,15 +169,15 @@ void makeCorrRoofit2(){
 		}
 		th1->SetTitle(Form("%d",masspoint[i]));
 		th1->SetMaximum(th1->GetMaximum()*1.3);
-		/*
+		
 		RooDataHist dh("dh","dh",x,Import(*th1)) ;
-		RooRealVar mean("mean","mean",125,50,150) ;
+		/*RooRealVar mean("mean","mean",125,50,150) ;
 		RooRealVar sigmaR("sigmaR","sigmaR",4,0.1,9) ;
 		RooRealVar sigmaL("sigmaL","sigmaL",10,0.1,18) ;
 		RooBifurGauss Bi("bi","bi",x,mean,sigmaL,sigmaR);
-	       
+		*/
 		
-		RooRealVar m0("m0","m0",117,50,150);
+		RooRealVar m0("m0","m0",80,40,100);
 		RooRealVar sig("sigma","sigma",12,0,100);
 		RooRealVar alpha("alpha","alpha",1,0,10);
 		RooRealVar n("n","n",1,0,50);
@@ -187,22 +187,23 @@ void makeCorrRoofit2(){
 		CB.fitTo(dh) ; 
 		CB.plotOn(frame,LineColor(kRed)) ;
 		CB.paramOn(frame,Layout(0.55)) ;
-		mean[5][i]=125/m0.getValV();
-		sigma[5][i]=m0.getError()*(125/m0.getValV())/m0.getValV();
+		mean[5][i]=80/m0.getValV();
+		sigma[5][i]=m0.getError()*(80/m0.getValV())/m0.getValV();
 		//mean[4][i]=125/th1->GetMean();
 		//sigma[4][i]=th1->GetMeanError()/th1->GetMean();
 		//th1->Draw();
 		frame->SetMaximum(th1->GetMaximum()*1.3);
 		frame->Draw() ;
-		//cout<<i<<"="<<mean[5][i]<<endl;*/
-		mean[5][i]=80/th1->GetMean();
+		//cout<<i<<"="<<mean[5][i]<<endl;
+		/*
+		  mean[5][i]=80/th1->GetMean();
 		sigma[5][i]=th1->GetMeanError()/th1->GetMean();
 
 		TF1* f1 = new TF1("f1","[0]/sqrt(2*TMath::Pi())/[2]*TMath::Exp(-0.5*(x-[1])*(x-[1])/[2]/[2] )+[3]/sqrt(2*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[1])*(x-[1])/[4]/[4] )");
 
                 f1->SetParameters(10,80,10,10,10);
                 th1->Fit("f1","","",40,100);
-
+		*/
 	if(i==0)c1->Print("plotsR/recoEndcap.pdf(");
 		else if(i==9)c1->Print("plotsR/recoEndcap.pdf)");
 		else  c1->Print("plotsR/recoEndcap.pdf");
