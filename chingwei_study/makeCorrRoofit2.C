@@ -129,7 +129,7 @@ void makeCorrRoofit2(){
 		*/
 		
 		RooRealVar m0("m0","m0",80,20,140);
-		RooRealVar sig("sigma","sigma",12,0,100);
+		RooRealVar sig("sigma","sigma",10,0,100);
 		RooRealVar alpha("alpha","alpha",1,0,10);
 		RooRealVar n("n","n",1,0,50);
 		RooCBShape CB("CB","CB",x,m0,sig,alpha,n);
@@ -178,7 +178,7 @@ void makeCorrRoofit2(){
 		*/
 		
 		RooRealVar m0("m0","m0",80,20,140);
-		RooRealVar sig("sigma","sigma",12,0,100);
+		RooRealVar sig("sigma","sigma",10,0,100);
 		RooRealVar alpha("alpha","alpha",1,0,10);
 		RooRealVar n("n","n",1,0,50);
 		RooCBShape CB("CB","CB",x,m0,sig,alpha,n);
