@@ -147,13 +147,14 @@ void makeCorrRoofit2(){
 		frame->Draw() ;
 		//cout<<i<<"="<<mean[4][i]<<endl;
 		*/
-		mean[4][i]=80/th1->GetMean();
-		sigma[4][i]=th1->GetMeanError()/th1->GetMean();
 
 		TF1* f2 = new TF1("f2","[4]*ROOT::Math::crystalball_function(x,[0],[1],[2],[3])");
-		f2->SetParameters(0.15,100,0.2,80,10);
+		f2->SetParameters(0.89,100,6.8,73,1107);
 		th1->Fit("f2","","",40,100);
 		
+		mean[4][i]=80/th1->GetMean();
+                sigma[4][i]=th1->GetMeanError()/th1->GetMean();
+
 	if(i==0)c1->Print("plotsR/recoBarel.pdf(");
 		else if(i==9)c1->Print("plotsR/recoBarel.pdf)");
 		else  c1->Print("plotsR/recoBarel.pdf");
@@ -195,13 +196,14 @@ void makeCorrRoofit2(){
 		frame->Draw() ;
 		//cout<<i<<"="<<mean[5][i]<<endl;
 		*/
-		  mean[5][i]=80/th1->GetMean();
-		sigma[5][i]=th1->GetMeanError()/th1->GetMean();
 
 		TF1* f2 = new TF1("f2","[4]*ROOT::Math::crystalball_function(x,[0],[1],[2],[3])");
-		f2->SetParameters(0.15,100,0.2,80,10);
+		f2->SetParameters(0.89,100,6.8,73,1107);
                 th1->Fit("f2","","",40,100);
 		
+		mean[5][i]=80/th1->GetMean();
+                sigma[5][i]=th1->GetMeanError()/th1->GetMean();
+
 	if(i==0)c1->Print("plotsR/recoEndcap.pdf(");
 		else if(i==9)c1->Print("plotsR/recoEndcap.pdf)");
 		else  c1->Print("plotsR/recoEndcap.pdf");
