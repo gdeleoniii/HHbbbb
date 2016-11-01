@@ -109,7 +109,7 @@ void makeCorrRoofit2(){
 	}
 	
 	
-	RooRealVar x("x","x",20,140) ;
+	RooRealVar x("x","x",0,150) ;
 	
 	for(int i=0;i<10;i++){
 		TH1D* th1=(TH1D*)tf1[i]->Get(Form("recoBarelMass%.0f",ptBins[i]));
@@ -128,8 +128,8 @@ void makeCorrRoofit2(){
 		RooBifurGauss Bi("bi","bi",x,mean,sigmaL,sigmaR);
 		*/
 		
-		RooRealVar m0("m0","m0",80,20,140);
-		RooRealVar sig("sigma","sigma",8,0,100);
+		RooRealVar m0("m0","m0",80,0,150);
+		RooRealVar sig("sigma","sigma",12,0,100);
 		RooRealVar alpha("alpha","alpha",1,0,10);
 		RooRealVar n("n","n",1,0,50);
 		RooCBShape CB("CB","CB",x,m0,sig,alpha,n);
@@ -177,8 +177,8 @@ void makeCorrRoofit2(){
 		RooBifurGauss Bi("bi","bi",x,mean,sigmaL,sigmaR);
 		*/
 		
-		RooRealVar m0("m0","m0",80,20,140);
-		RooRealVar sig("sigma","sigma",8,0,100);
+		RooRealVar m0("m0","m0",80,0,150);
+		RooRealVar sig("sigma","sigma",12,0,100);
 		RooRealVar alpha("alpha","alpha",1,0,10);
 		RooRealVar n("n","n",1,0,50);
 		RooCBShape CB("CB","CB",x,m0,sig,alpha,n);
