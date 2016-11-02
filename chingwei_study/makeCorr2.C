@@ -92,7 +92,8 @@ void makeCorr2(){
 		else  c1->Print("plots/genBarel.pdf");
 	}
 	
-	for(int i=0;i<10;i++){
+	for(int i=0;i<12;i++){
+	  if(i==10)break;
 		TH1D* th1=(TH1D*)f->Get(Form("genEndcapMass%.0f",ptBins[i]));
 		TF1 *tf1[4];
 		tf1[0]=new TF1("fa1","gaus(25000)",30,110);
@@ -112,14 +113,14 @@ void makeCorr2(){
 	for(int i=0;i<12;i++){
 		TH1D* th1=(TH1D*)f->Get(Form("recoBarelMass%.0f",ptBins[i]));
 		TF1 *tf1[4];
-		//if(i<2){
-		//	tf1[0]=new TF1("fa1","gaus(25000)",th1->GetMaximumBin()-30,th1->GetMaximumBin()+30);
-		//th1->Fit(tf1[0],"","",th1->GetMaximumBin()-30,th1->GetMaximumBin()+30);
-		//}
-		//else {
+		if(i==0){
+		  tf1[0]=new TF1("fa1","gaus(25000)",40,100);
+		  th1->Fit(tf1[0],"","",40,100);
+		}
+		else {
 			tf1[0]=new TF1("fa1","gaus(25000)",th1->GetMaximumBin()-15,th1->GetMaximumBin()+15);
 		th1->Fit(tf1[0],"","",th1->GetMaximumBin()-15,th1->GetMaximumBin()+15);
-		//}
+		}
 		mean[4][i]=80/tf1[0]->GetParameter(1);
 		sigma[4][i]=tf1[0]->GetParError(1)*(80/tf1[0]->GetParameter(1))/tf1[0]->GetParameter(1);
 		//mean[4][i]=125/th1->GetMean();
@@ -134,7 +135,8 @@ void makeCorr2(){
 		else  c1->Print("plots/recoBarel.pdf");
 	}
 	
-	for(int i=0;i<10;i++){
+	for(int i=0;i<12;i++){
+	  if(i==10)break;
 		TH1D* th1=(TH1D*)f->Get(Form("recoEndcapMass%.0f",ptBins[i]));
 		TF1 *tf1[4];
 		if(i<2){
