@@ -92,8 +92,8 @@ void makeCorr2(){
 		else  c1->Print("plots/genBarel.pdf");
 	}
 	
-	for(int i=0;i<12;i++){
-	  if(i==10)break;
+	for(int i=0;i<10;i++){
+	  //if(i==10)break;
 		TH1D* th1=(TH1D*)f->Get(Form("genEndcapMass%.0f",ptBins[i]));
 		TF1 *tf1[4];
 		tf1[0]=new TF1("fa1","gaus(25000)",30,110);
@@ -106,7 +106,7 @@ void makeCorr2(){
 			th1->SetTitle(Form("%.0f",ptBins[i]));
 		tf1[0]->Draw("same");
 		if(i==0)c1->Print("plots/genEndcap.pdf(");
-		else if(i==11)c1->Print("plots/genEndcap.pdf)");
+		else if(i==9)c1->Print("plots/genEndcap.pdf)");
 		else  c1->Print("plots/genEndcap.pdf");
 	}
 	
@@ -135,8 +135,8 @@ void makeCorr2(){
 		else  c1->Print("plots/recoBarel.pdf");
 	}
 	
-	for(int i=0;i<12;i++){
-	  if(i==10)break;
+	for(int i=0;i<10;i++){
+	  //if(i==10)break;
 		TH1D* th1=(TH1D*)f->Get(Form("recoEndcapMass%.0f",ptBins[i]));
 		TF1 *tf1[4];
 		if(i<2){
@@ -157,7 +157,7 @@ void makeCorr2(){
 		tf1[0]->Draw("same");
 	//cout<<i<<"="<<mean[5][i]<<endl;
 	if(i==0)c1->Print("plots/recoEndcap.pdf(");
-		else if(i==11)c1->Print("plots/recoEndcap.pdf)");
+		else if(i==9)c1->Print("plots/recoEndcap.pdf)");
 		else  c1->Print("plots/recoEndcap.pdf");
 	
 	}
