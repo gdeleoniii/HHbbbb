@@ -100,7 +100,7 @@ void triggeff_HT_DBTgroup(std::string inputFile) {
     Float_t msubt = Mjj.M()-(FatjetPRmassCorr[lead]-125)-(FatjetPRmassCorr[subl]-125);
     //if(msubt<800)continue;
 
-    if(passedHLT350==1 || passedHLT800==1) {
+    if(passedHLT350==1 && passedHLT800==1) {
       h_Mjj1->Fill(Mjj.M());
       h_Mjjred1->Fill(msubt);
       }
