@@ -123,7 +123,7 @@ void triggeff_HT_DBTgroup(std::string inputFile) {
 
   h_Mjj3->SetLineWidth(2);
   h_Mjj3->SetLineColor(kRed+3);
-  h_Mjj3->Divide(h_Mjj2,h_Mjj1);
+  h_Mjj3->Divide(h_Mjj1,h_Mjj2);
   h_Mjj3->Draw();
 
   c3->Print("TriggerEff_Mjj_JetHT-Run2015_Prescaledx.pdf");
@@ -138,7 +138,7 @@ void triggeff_HT_DBTgroup(std::string inputFile) {
 
   h_Mjjred3->SetLineWidth(2);
   h_Mjjred3->SetLineColor(kGreen+3);
-  h_Mjjred3->Divide(h_Mjjred2,h_Mjjred1);
+  h_Mjjred3->Divide(h_Mjjred1,h_Mjjred2);
   h_Mjjred3->Draw();
 
   c->Print("TriggerEff_Mjjred_JetHT-Run2015_Prescaledx.pdf");
