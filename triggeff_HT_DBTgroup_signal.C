@@ -38,12 +38,12 @@ void triggeff_HT_DBTgroup_signal(std::string inputFile) {
   TGraphAsymmErrors* hAE_Mjj = new TGraphAsymmErrors();
   TGraphAsymmErrors* hAE_Mjjred = new TGraphAsymmErrors();
 
-  TH1F* h_Mjj1 =  new TH1F("","",80,700,3000);
-  TH1F* h_Mjj2 =  new TH1F("","",80,700,3000);
-  TH1F* h_Mjj3 =  new TH1F("","",80,700,3000);
-  TH1F* h_Mjjred1 =  new TH1F("","",80,700,3000);
-  TH1F* h_Mjjred2 =  new TH1F("","",80,700,3000);
-  TH1F* h_Mjjred3 =  new TH1F("","",80,700,3000);
+  TH1F* h_Mjj1 =  new TH1F("","",44,800,3000);
+  TH1F* h_Mjj2 =  new TH1F("","",44,800,3000);
+  TH1F* h_Mjj3 =  new TH1F("","",44,800,3000);
+  TH1F* h_Mjjred1 =  new TH1F("","",44,800,3000);
+  TH1F* h_Mjjred2 =  new TH1F("","",44,800,3000);
+  TH1F* h_Mjjred3 =  new TH1F("","",44,800,3000);
   h_Mjj1->Sumw2();
   h_Mjj2->Sumw2();
   h_Mjj3->Sumw2();
@@ -53,7 +53,7 @@ void triggeff_HT_DBTgroup_signal(std::string inputFile) {
 
 
   //----------------------------------
-  Int_t nbins = 80;
+  Int_t nbins = 44;
   double mjj_central[nbins];
   double mjj_up[nbins];
   double mjj_down[nbins];
@@ -64,17 +64,23 @@ void triggeff_HT_DBTgroup_signal(std::string inputFile) {
   float mjj_mass[nbins];
   float mjjred_mass[nbins];
 
+  ifstream fin;
+  fin.open("Mjj_TriggerEff_Weights.dat");
+  ifstream fin1;
+  fin1.open("Mjjred_TriggerEff_Weights.dat");
   for(int i = 0;i <nbins;i++) {
-    ifstream fin;
-    fin.open("Mjj_TriggerEff_Weights.dat");
+    //ifstream fin;
+    //fin.open("Mjj_TriggerEff_Weights.dat");
     fin >> mjj_mass[i] >> mjj_central[i] >> mjj_up[i]>> mjj_down[i];
-    fin.close();
+    //fin.close();
 
-    ifstream fin1;
-    fin1.open("Mjjred_TriggerEff_Weights.dat");
+    //ifstream fin1;
+    //fin1.open("Mjjred_TriggerEff_Weights.dat");
     fin1 >> mjjred_mass[i] >> mjjred_central[i] >> mjjred_up[i]>> mjjred_down[i];
-    fin1.close();
+    //fin1.close();
   }
+  fin.close();
+  fin1.close();
   //----------------------------------
 
   Int_t x = 0;
@@ -146,23 +152,25 @@ void triggeff_HT_DBTgroup_signal(std::string inputFile) {
     */
     
 
-    Float_t width = 827.5;
+    Float_t width = 50;
+    cout<<Mjj<<endl;
     for(int i = 0;i <nbins;i++) {
       
-      if(Mjj > mjj_mass[i] && Mjj < width) {
+      if(Mjj > mjj_mass[i] && Mjj < (mjj_mass[i]+width)) {
 	h_Mjj1->Fill(Mjj,mjj_central[i]);
 	h_Mjj2->Fill(Mjj,mjj_up[i]);
 	h_Mjj3->Fill(Mjj,mjj_down[i]);
+	cout<<i<<" "<<Mjj<<" "<<mjj_mass[i]<<" "<<mjj_mass[i]+width<<endl;
       }
       
-      if(msubt > mjjred_mass[i] && msubt < width) {
+      if(msubt > mjjred_mass[i] && msubt < (mjjred_mass[i]+width)) {
 	h_Mjjred1->Fill(msubt,mjjred_central[i]);
 	h_Mjjred2->Fill(msubt,mjjred_up[i]);
 	h_Mjjred3->Fill(msubt,mjjred_down[i]);
       }
-      width +=27.5;
+
       
-      }
+    }
     
     
     
@@ -221,18 +229,18 @@ void triggeff_HT_DBTgroup_signal(std::string inputFile) {
   leg1->AddEntry(h_Mjjred3, "down", "l");
   leg1->Draw();
 
-  Float_t plus = h_Mjjred2->Integral();
-  Float_t minus = h_Mjjred3->Integral();
-  Float_t center = h_Mjjred1->Integral();
+  Double_t plus = h_Mjjred2->GetBinCenter(3);
+  Double_t minus = h_Mjjred3->GetBinCenter(3);
+  Double_t center = h_Mjjred1->GetBinCenter(3);
 
   Float_t up = abs(center - plus)/center;
   Float_t dw = abs(center - minus)/center;
 
-  cout<< up << " "<< dw<<endl; 
+  cout<<plus<<" "<<minus<<" "<<center<<" "<<up<< " "<< dw<<endl; 
 
-  std::string bulkg_name[]={"1000","1400","1600","2000","2500","3000","4000"};
+  std::string bulkg_name[]={"900","1000","1400","1600","2000","2500","3000","4000"};
 
-  for(int i=0;i<7;i++){
+  for(int i=0;i<8;i++){
     bool bulkmass=(inputFile.find(Form("%s",bulkg_name[i].data()))!= std::string::npos); 
     if(bulkmass) {
       c3->Print(Form("TriggerEff_SysUnc_Mjj_BulkGrav_%s.pdf",bulkg_name[i].data()));
