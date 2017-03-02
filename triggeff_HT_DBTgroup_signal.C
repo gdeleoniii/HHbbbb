@@ -229,14 +229,22 @@ void triggeff_HT_DBTgroup_signal(std::string inputFile) {
   leg1->AddEntry(h_Mjjred3, "down", "l");
   leg1->Draw();
 
-  Double_t plus = h_Mjjred2->GetBinCenter(3);
-  Double_t minus = h_Mjjred3->GetBinCenter(3);
-  Double_t center = h_Mjjred1->GetBinCenter(3);
+  Double_t plus = h_Mjj2->GetBinContent(3);
+  Double_t minus = h_Mjj3->GetBinContent(3);
+  Double_t center = h_Mjj1->GetBinContent(3);
+
+  Double_t plus1 = h_Mjjred2->GetBinContent(3);
+  Double_t minus1 = h_Mjjred3->GetBinContent(3);
+  Double_t center1 = h_Mjjred1->GetBinContent(3);
 
   Float_t up = abs(center - plus)/center;
   Float_t dw = abs(center - minus)/center;
 
-  cout<<plus<<" "<<minus<<" "<<center<<" "<<up<< " "<< dw<<endl; 
+  Float_t up1 = abs(center1 - plus1)/center1;
+  Float_t dw1 = abs(center1 - minus1)/center1;
+
+  cout<<plus<<" "<<minus<<" "<<center<<" "<<up<< " "<<dw<<endl; 
+  cout<<plus1<<" "<<minus1<<" "<<center1<<" "<<up1<< " "<<dw1<<endl;
 
   std::string bulkg_name[]={"900","1000","1400","1600","2000","2500","3000","4000"};
 
