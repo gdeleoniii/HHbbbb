@@ -74,6 +74,48 @@ void jes(std::string inputFile) {
     vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
     const Int_t nsize = data.GetPtrStringSize();
 
+    //---------JES Uncertainty----------
+    vector<int> fatjet;
+    for(int ij=0; ij<nFJets; ij++) {
+      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
+      fatjet.push_back(ij);
+    }
+
+    if(fatjet.size()<2)continue;
+    int aa = fatjet[0]; //Mjj[0].second;                                                                                                                           
+    int ee = fatjet[1]; //Mjj[0].first;                                                                                                                  
+    TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa);
+    TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
+    TLorentzVector Jet1Up(0,0,0,0);
+    TLorentzVector Jet2Up(0,0,0,0);
+    TLorentzVector Jet1Dw(0,0,0,0);
+    TLorentzVector Jet2Dw(0,0,0,0);
+
+    Double_t pt1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).Pt();
+    Double_t pt2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).Pt();
+    Double_t pt1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).Pt();
+    Double_t pt2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).Pt();
+
+    Double_t eta1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).Eta();
+    Double_t eta2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).Eta();
+    Double_t eta1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).Eta();
+    Double_t eta2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).Eta();
+
+    Double_t phi1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).Phi();
+    Double_t phi2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).Phi();
+    Double_t phi1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).Phi();
+    Double_t phi2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).Phi();
+
+    Double_t m1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).M();
+    Double_t m2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).M();
+    Double_t m1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).M();
+    Double_t m2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).M();
+
+    Jet1Up.SetPtEtaPhiM(pt1up,eta1up,phi1up,m1up);
+    Jet2Up.SetPtEtaPhiM(pt2up,eta2up,phi2up,m2up);
+    Jet1Dw.SetPtEtaPhiM(pt1dw,eta1dw,phi1dw,m1dw);
+    Jet2Dw.SetPtEtaPhiM(pt2dw,eta2dw,phi2dw,m2dw);
+
     bool passTrigger=false;
     for(int it=0; it< nsize; it++)
       {
@@ -97,14 +139,16 @@ void jes(std::string inputFile) {
 
     nPass[1]++;   
 
+
+
     //3. has a good vertex
     Int_t nVtx        = data.GetInt("nVtx");
     if(nVtx<1)continue;
        
-    vector<int> fatjet;
-    vector<pair<int,int>> Mjj;
-    for(int ij=0; ij<nFJets; ij++) {
+    /* vector<int> fatjet;
+        for(int ij=0; ij<nFJets; ij++) {
       TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
+
       if(thisJet->Pt()<200)continue;
       if(fabs(thisJet->Eta())>2.4)continue;
       if(!FATjetPassIDTight[ij])continue;
@@ -113,17 +157,37 @@ void jes(std::string inputFile) {
       fatjet.push_back(ij);	
     }
     
-    if(fatjet.size()<2)continue;
+    if(fatjet.size()<2)continue;*/
+    if(!FATjetPassIDTight[aa])continue; 
+    if(!FATjetPassIDTight[ee])continue;
+
+    if(Jet1->Pt()<200)continue;
+    if(Jet2->Pt()<200)continue;
+    if(Jet1Up.Pt()<200)continue;
+    if(Jet2Up.Pt()<200)continue; 
+    if(Jet1Dw.Pt()<200)continue;
+    if(Jet2Dw.Pt()<200)continue;
+
+    if(fabs(Jet1->Eta())>2.4)continue;
+    if(fabs(Jet2->Eta())>2.4)continue;
+    if(fabs(Jet1Up.Eta())>2.4)continue;
+    if(fabs(Jet2Up.Eta())>2.4)continue;
+    if(fabs(Jet1Dw.Eta())>2.4)continue;
+    if(fabs(Jet2Dw.Eta())>2.4)continue;
 
     nPass[2]++;
 
-    int aa = fatjet[0]; //Mjj[0].second;
+    /*int aa = fatjet[0]; //Mjj[0].second;
     int ee = fatjet[1]; //Mjj[0].first;
     TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa); 
-    TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
+    TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);*/
 
     Double_t dEta = fabs(Jet1->Eta() - Jet2->Eta());
     if(dEta>1.3)continue;
+    Double_t dEtaUp = fabs(Jet1Up.Eta() - Jet2Up.Eta());
+    if(dEtaUp>1.3)continue;
+    Double_t dEtaDw = fabs(Jet1Dw.Eta() - Jet2Dw.Eta());
+    if(dEtaDw>1.3)continue;
 
     nPass[3]++;
 
@@ -146,20 +210,34 @@ void jes(std::string inputFile) {
     nPass[6]++;
 
     int addJetIndex[2]={-1,-1}; 
+    int addJetIndexUp[2]={-1,-1};
+    int addJetIndexDw[2]={-1,-1};
     for(int ad=0; ad<nAJets; ad++) {
       TLorentzVector* Jet3 = (TLorentzVector*)addjetP4->At(ad);
       if(Jet1->DeltaR(*Jet3)<0.1 && addJetIndex[0] < 0) { addJetIndex[0]=ad;} // first add jet to pass the delta r cut
       if(Jet2->DeltaR(*Jet3)<0.1 && addJetIndex[1] < 0) { addJetIndex[1]=ad;} // first add jet to pass the delta r cut
+      if(Jet1Up.DeltaR(*Jet3)<0.1 && addJetIndexUp[0] < 0) { addJetIndexUp[0]=ad;}
+      if(Jet2Up.DeltaR(*Jet3)<0.1 && addJetIndexUp[1] < 0) { addJetIndexUp[1]=ad;}
+      if(Jet1Dw.DeltaR(*Jet3)<0.1 && addJetIndexDw[0] < 0) { addJetIndexDw[0]=ad;}
+      if(Jet2Dw.DeltaR(*Jet3)<0.1 && addJetIndexDw[1] < 0) { addJetIndexDw[1]=ad;}
     }
     if(addJetIndex[0]<0 || addJetIndex[1]<0)continue;
+    if(addJetIndexUp[0]<0 || addJetIndexUp[1]<0)continue;
+    if(addJetIndexDw[0]<0 || addJetIndexDw[1]<0)continue;
 
     if(addjet_doubleSV[addJetIndex[0]]<0.6)continue;
     if(addjet_doubleSV[addJetIndex[1]]<0.6)continue;
+    if(addjet_doubleSV[addJetIndexUp[0]]<0.6)continue;
+    if(addjet_doubleSV[addJetIndexUp[1]]<0.6)continue;
+    if(addjet_doubleSV[addJetIndexDw[0]]<0.6)continue;
+    if(addjet_doubleSV[addJetIndexDw[1]]<0.6)continue;
 
     nPass[7]++;
  
-    Float_t msubtup = ((*Jet1)*(1+fatjetCorrUncUp[aa])+(*Jet2)*(1+fatjetCorrUncUp[ee])).M() - (fatjetPRmassL2L3Corr[aa]-125) - (fatjetPRmassL2L3Corr[ee]-125);
-    Float_t msubtdw = ((*Jet1)*(1-fatjetCorrUncDown[aa])+(*Jet2)*(1-fatjetCorrUncDown[ee])).M() - (fatjetPRmassL2L3Corr[aa]-125) - (fatjetPRmassL2L3Corr[ee]-125);
+    Float_t msubtup = (Jet1Up+Jet2Up).M() - (fatjetPRmassL2L3Corr[aa]-125) - (fatjetPRmassL2L3Corr[ee]-125);
+    Float_t msubtdw = (Jet1Dw+Jet2Dw).M() - (fatjetPRmassL2L3Corr[aa]-125) - (fatjetPRmassL2L3Corr[ee]-125);
+    if(msubtup<800)continue;
+    if(msubtdw<800)continue;
 
     h_Mjjred1->Fill(msubt);
     h_Mjjred2->Fill(msubtup);
@@ -204,7 +282,7 @@ void jes(std::string inputFile) {
   h_Mjjred3->Scale((2.6837)/nPass[0]);
 
   bool BulkGrav=(inputFile.find("BulkGrav")!= std::string::npos);
-  
+  /*
   TFile* outfile = new TFile("jes.root","update");
   if(BulkGrav) {
     for(int i=0;i<nBM;i++){
@@ -228,7 +306,7 @@ void jes(std::string inputFile) {
       }
     }
   }
-  
+  */
 
   //---------------------------------------------------------------
 
@@ -299,12 +377,12 @@ void jes(std::string inputFile) {
     for(int i=0;i<nBM;i++){
       bool bulkmass=(inputFile.find(Form("%s",bulkg_name[i].data()))!= std::string::npos);
       if(bulkmass) {
-	c2->Print(Form("JES_Mjjred_SysUnc_BulkGrav_%s.pdf",bulkg_name[i].data()));
+	//c2->Print(Form("JES_Mjjred_SysUnc_BulkGrav_%s.pdf",bulkg_name[i].data()));
 	//c->Print(Form("DBTSF_pT_BulkGrav_%s.pdf",bulkg_name[i].data()));
-        ofstream fout;
-        fout.open("bulkg_jes_sysunc.dat",ios::out | ios::app);
-        fout<<sys1up<<" "<<sys1down<<endl;
-        fout.close();
+        //ofstream fout;
+        //fout.open("bulkg_jes_sysunc.dat",ios::out | ios::app);
+        //fout<<sys1up<<" "<<sys1down<<endl;
+        //fout.close();
       }
     }
   }
@@ -312,12 +390,12 @@ void jes(std::string inputFile) {
     for(int i=0;i<nRM;i++){
       bool radionmass=(inputFile.find(Form("%s",radion_name[i].data()))!= std::string::npos);
       if(radionmass) {
-	c2->Print(Form("JES_Mjjred_SysUnc_Radion_%s.pdf",radion_name[i].data()));
+	//c2->Print(Form("JES_Mjjred_SysUnc_Radion_%s.pdf",radion_name[i].data()));
 	//c->Print(Form("DBTSF_pT_Radion_%s.pdf",radion_name[i].data()));
-        ofstream fout;
-        fout.open("radion_jes_sysunc.dat",ios::out | ios::app);
-        fout<<sys1up<<" "<<sys1down<<endl;
-        fout.close();
+        //ofstream fout;
+        //fout.open("radion_jes_sysunc.dat",ios::out | ios::app);
+        //fout<<sys1up<<" "<<sys1down<<endl;
+        //fout.close();
       }
     }
   }
