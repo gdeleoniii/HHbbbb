@@ -86,35 +86,15 @@ void jes(std::string inputFile) {
     int ee = fatjet[1]; //Mjj[0].first;                                                                                                                  
     TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa);
     TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
-    TLorentzVector Jet1Up(0,0,0,0);
-    TLorentzVector Jet2Up(0,0,0,0);
-    TLorentzVector Jet1Dw(0,0,0,0);
-    TLorentzVector Jet2Dw(0,0,0,0);
+    TLorentzVector Jet1Up(*Jet1);   
+    TLorentzVector Jet2Up(*Jet2);
+    TLorentzVector Jet1Dw(*Jet1);
+    TLorentzVector Jet2Dw(*Jet2);
 
-    Double_t pt1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).Pt();
-    Double_t pt2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).Pt();
-    Double_t pt1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).Pt();
-    Double_t pt2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).Pt();
-
-    Double_t eta1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).Eta();
-    Double_t eta2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).Eta();
-    Double_t eta1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).Eta();
-    Double_t eta2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).Eta();
-
-    Double_t phi1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).Phi();
-    Double_t phi2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).Phi();
-    Double_t phi1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).Phi();
-    Double_t phi2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).Phi();
-
-    Double_t m1up = ((*Jet1)*(1+fatjetCorrUncUp[aa])).M();
-    Double_t m2up = ((*Jet2)*(1+fatjetCorrUncUp[ee])).M();
-    Double_t m1dw = ((*Jet1)*(1-fatjetCorrUncDown[aa])).M();
-    Double_t m2dw = ((*Jet2)*(1-fatjetCorrUncDown[ee])).M();
-
-    Jet1Up.SetPtEtaPhiM(pt1up,eta1up,phi1up,m1up);
-    Jet2Up.SetPtEtaPhiM(pt2up,eta2up,phi2up,m2up);
-    Jet1Dw.SetPtEtaPhiM(pt1dw,eta1dw,phi1dw,m1dw);
-    Jet2Dw.SetPtEtaPhiM(pt2dw,eta2dw,phi2dw,m2dw);
+    Jet1Up *= (1+fatjetCorrUncUp[aa]);
+    Jet2Up *= (1+fatjetCorrUncUp[ee]);
+    Jet1Dw *= (1-fatjetCorrUncDown[aa]);
+    Jet2Dw *= (1-fatjetCorrUncDown[ee]);
 
     bool passTrigger=false;
     for(int it=0; it< nsize; it++)
@@ -122,7 +102,6 @@ void jes(std::string inputFile) {
 	std::string thisTrig= trigName[it];
 	bool results = trigResult[it];
 
-	
 	if( (thisTrig.find("HLT_PFHT800")!= std::string::npos && results==1)
 	    )
 	  {
@@ -143,8 +122,8 @@ void jes(std::string inputFile) {
     //3. has a good vertex
     Int_t nVtx        = data.GetInt("nVtx");
     if(nVtx<1)continue;
-    
-    if(fatjet.size()<2)continue;*/
+       
+
     if(!FATjetPassIDTight[aa])continue; 
     if(!FATjetPassIDTight[ee])continue;
 
@@ -163,7 +142,7 @@ void jes(std::string inputFile) {
     if(fabs(Jet2Dw.Eta())>2.4)continue;
 
     nPass[2]++;
-	  
+
     Double_t dEta = fabs(Jet1->Eta() - Jet2->Eta());
     if(dEta>1.3)continue;
     Double_t dEtaUp = fabs(Jet1Up.Eta() - Jet2Up.Eta());
