@@ -76,6 +76,25 @@ void jms(std::string inputFile) {
     vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
     const Int_t nsize = data.GetPtrStringSize();
 
+    //---------JMS Uncertainty----------
+    vector<int> fatjet;
+    for(int ij=0; ij<nFJets; ij++) {
+      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
+      fatjet.push_back(ij);
+    }
+
+    if(fatjet.size()<2)continue;
+    int aa = fatjet[0]; //Mjj[0].second;                                                                                                                           
+    int ee = fatjet[1]; //Mjj[0].first;                                                                                                                  
+    TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa);
+    TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
+
+    Float_t leadcorrPRmassUp = fatjetPRmassL2L3Corr[aa]*(1+fatjetCorrUncUp[aa]);
+    Float_t sublcorrPRmassUp = fatjetPRmassL2L3Corr[ee]*(1+fatjetCorrUncUp[ee]);
+    Float_t leadcorrPRmassDw = fatjetPRmassL2L3Corr[aa]*(1-fatjetCorrUncDown[aa]);
+    Float_t sublcorrPRmassDw = fatjetPRmassL2L3Corr[ee]*(1-fatjetCorrUncDown[ee]);
+
+
     bool passTrigger=false;
     for(int it=0; it< nsize; it++)
       {
@@ -87,6 +106,7 @@ void jms(std::string inputFile) {
 	if( (thisTrig.find("HLT_PFHT800")!= std::string::npos && results==1)
 	    )
 	  {
+	    if(thisTrig != "HLT_PFHT800_v2") {cout<<thisTrig<<endl;}
 	    passTrigger=true;
 	    break;
 	  }
@@ -102,27 +122,17 @@ void jms(std::string inputFile) {
     //3. has a good vertex
     Int_t nVtx        = data.GetInt("nVtx");
     if(nVtx<1)continue;
-       
-    vector<int> fatjet;
-    vector<pair<int,int>> Mjj;
-    for(int ij=0; ij<nFJets; ij++) {
-      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
-      if(thisJet->Pt()<200)continue;
-      if(fabs(thisJet->Eta())>2.4)continue;
-      if(!FATjetPassIDTight[ij])continue;
-    
-      
-      fatjet.push_back(ij);	
-    }
-    
-    if(fatjet.size()<2)continue;
+
+    if(!FATjetPassIDTight[aa])continue; 
+    if(!FATjetPassIDTight[ee])continue;
+
+    if(Jet1->Pt()<200)continue;
+    if(Jet2->Pt()<200)continue;
+
+    if(fabs(Jet1->Eta())>2.4)continue;
+    if(fabs(Jet2->Eta())>2.4)continue;
 
     nPass[2]++;
-
-    int aa = fatjet[0]; //Mjj[0].second;
-    int ee = fatjet[1]; //Mjj[0].first;
-    TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa); 
-    TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
 
     Double_t dEta = fabs(Jet1->Eta() - Jet2->Eta());
     if(dEta>1.3)continue;
@@ -135,8 +145,13 @@ void jms(std::string inputFile) {
 
     nPass[4]++;
 
-    //if(fatjetPRmassL2L3Corr[aa]<105 || fatjetPRmassL2L3Corr[aa]>135)continue;
-    //if(fatjetPRmassL2L3Corr[ee]<105 || fatjetPRmassL2L3Corr[ee]>135)continue;
+    if(fatjetPRmassL2L3Corr[aa]<105 || fatjetPRmassL2L3Corr[aa]>135)continue;
+    if(fatjetPRmassL2L3Corr[ee]<105 || fatjetPRmassL2L3Corr[ee]>135)continue;
+    if(leadcorrPRmassUp<105 || leadcorrPRmassUp>135)continue;
+    if(sublcorrPRmassUp<105 || sublcorrPRmassUp>135)continue;
+    if(leadcorrPRmassDw<105 || leadcorrPRmassDw>135)continue;
+    if(sublcorrPRmassDw<105 || sublcorrPRmassDw>135)continue;
+
 
     nPass[5]++;
 
@@ -160,20 +175,12 @@ void jms(std::string inputFile) {
 
     nPass[7]++;
  
-    Float_t msubtup = mff-((fatjetPRmassL2L3Corr[aa]*(1+fatjetCorrUncUp[aa]))-125)-((fatjetPRmassL2L3Corr[ee]*(1+fatjetCorrUncUp[ee]))-125);
-    Float_t msubtdw = mff-((fatjetPRmassL2L3Corr[aa]*(1-fatjetCorrUncDown[aa]))-125)-((fatjetPRmassL2L3Corr[ee]*(1-fatjetCorrUncDown[ee]))-125);
+    Float_t msubtup = mff-(leadcorrPRmassUp-125)-(sublcorrPRmassUp-125);
+    Float_t msubtdw = mff-(leadcorrPRmassDw-125)-(sublcorrPRmassDw-125);
 
     h_Mjjred1->Fill(msubt);
     h_Mjjred2->Fill(msubtup);
     h_Mjjred3->Fill(msubtdw);
-
-    if(fatjetPRmassL2L3Corr[aa]<105 || fatjetPRmassL2L3Corr[aa]>135)continue;
-    if(fatjetPRmassL2L3Corr[ee]<105 || fatjetPRmassL2L3Corr[ee]>135)continue;
-
-    h_Mjjred4->Fill(msubt);
-    h_Mjjred5->Fill(msubtup);
-    h_Mjjred6->Fill(msubtdw);
-
 
   } //end of the event loop
 
@@ -269,8 +276,8 @@ void jms(std::string inputFile) {
   h_Mjjred2->SetLineWidth(2);
   h_Mjjred3->SetLineWidth(2);
   h_Mjjred1->SetLineStyle(1);
-  h_Mjjred2->SetLineStyle(1);
-  h_Mjjred3->SetLineStyle(1);
+  h_Mjjred2->SetLineStyle(9);
+  h_Mjjred3->SetLineStyle(5);
   h_Mjjred2->Draw("histsame");
   //h_Mjjred2->GetYaxis()->SetTitle("");
   //h_Mjjred2->GetXaxis()->SetTitle("reduced dijet mass");
@@ -291,20 +298,20 @@ void jms(std::string inputFile) {
   h_Mjjred4->SetLineColor(kViolet+2);
   h_Mjjred5->SetLineColor(kOrange+2);
   h_Mjjred6->SetLineColor(kGreen+2);
-  h_Mjjred4->Draw("histsame");
-  h_Mjjred5->Draw("histsame");
-  h_Mjjred6->Draw("histsame");
-  TLegend *leg1 = new TLegend(0.50, 0.62, 0.97, 0.88);
+  //h_Mjjred4->Draw("histsame");
+  //h_Mjjred5->Draw("histsame");
+  //h_Mjjred6->Draw("histsame");
+  TLegend *leg1 = new TLegend(0.70, 0.72, 0.97, 0.88);
   leg1->SetBorderSize(0);
   leg1->SetFillColor(0);
   leg1->SetFillStyle(0);
   leg1->SetTextSize(0.035);
-  leg1->AddEntry(h_Mjjred2, "up before signal cut", "l");
-  leg1->AddEntry(h_Mjjred1, "central before signal cut", "l");
-  leg1->AddEntry(h_Mjjred3, "down before signal cut", "l");
-  leg1->AddEntry(h_Mjjred5, "up after signal cut", "l");
-  leg1->AddEntry(h_Mjjred4, "central after signal cut", "l");
-  leg1->AddEntry(h_Mjjred6, "down after signal cut", "l");
+  leg1->AddEntry(h_Mjjred2, "up", "l");
+  leg1->AddEntry(h_Mjjred1, "central", "l");
+  leg1->AddEntry(h_Mjjred3, "down", "l");
+  //leg1->AddEntry(h_Mjjred5, "up after signal cut", "l");
+  //leg1->AddEntry(h_Mjjred4, "central after signal cut", "l");
+  //leg1->AddEntry(h_Mjjred6, "down after signal cut", "l");
   leg1->Draw();
 
 
