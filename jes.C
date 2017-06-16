@@ -122,7 +122,6 @@ void jes(std::string inputFile) {
 	std::string thisTrig= trigName[it];
 	bool results = trigResult[it];
 
-	// std::cout << thisTrig << " : " << results << std::endl;
 	
 	if( (thisTrig.find("HLT_PFHT800")!= std::string::npos && results==1)
 	    )
@@ -144,18 +143,6 @@ void jes(std::string inputFile) {
     //3. has a good vertex
     Int_t nVtx        = data.GetInt("nVtx");
     if(nVtx<1)continue;
-       
-    /* vector<int> fatjet;
-        for(int ij=0; ij<nFJets; ij++) {
-      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
-
-      if(thisJet->Pt()<200)continue;
-      if(fabs(thisJet->Eta())>2.4)continue;
-      if(!FATjetPassIDTight[ij])continue;
-    
-      
-      fatjet.push_back(ij);	
-    }
     
     if(fatjet.size()<2)continue;*/
     if(!FATjetPassIDTight[aa])continue; 
@@ -176,12 +163,7 @@ void jes(std::string inputFile) {
     if(fabs(Jet2Dw.Eta())>2.4)continue;
 
     nPass[2]++;
-
-    /*int aa = fatjet[0]; //Mjj[0].second;
-    int ee = fatjet[1]; //Mjj[0].first;
-    TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa); 
-    TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);*/
-
+	  
     Double_t dEta = fabs(Jet1->Eta() - Jet2->Eta());
     if(dEta>1.3)continue;
     Double_t dEtaUp = fabs(Jet1Up.Eta() - Jet2Up.Eta());
