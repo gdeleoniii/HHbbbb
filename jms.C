@@ -27,18 +27,13 @@
 
 
 using namespace std;
-void jms(std::string inputFile) {
+void jms(std::string inputFile, int mode) {
   
   //get TTree from file ...
   TreeReader data(inputFile.data());
 
   int nbin_mjj = 84;
   TH1F* h_Mjjred1 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred2 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred3 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred4 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred5 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred6 =  new TH1F("","",nbin_mjj,800,5000);
 
   Float_t nPass[20]={0};
   
@@ -89,11 +84,18 @@ void jms(std::string inputFile) {
     TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa);
     TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
 
-    Float_t leadcorrPRmassUp = fatjetPRmassL2L3Corr[aa]*(1+fatjetCorrUncUp[aa]);
-    Float_t sublcorrPRmassUp = fatjetPRmassL2L3Corr[ee]*(1+fatjetCorrUncUp[ee]);
-    Float_t leadcorrPRmassDw = fatjetPRmassL2L3Corr[aa]*(1-fatjetCorrUncDown[aa]);
-    Float_t sublcorrPRmassDw = fatjetPRmassL2L3Corr[ee]*(1-fatjetCorrUncDown[ee]);
-
+    if(mode == 1) {
+      fatjetPRmassL2L3Corr[aa] *= (1+fatjetCorrUncUp[aa]);
+      fatjetPRmassL2L3Corr[ee] *= (1+fatjetCorrUncUp[ee]);
+    }
+    else if(mode == -1) {
+      fatjetPRmassL2L3Corr[aa] *= (1-fatjetCorrUncDown[aa]);
+      fatjetPRmassL2L3Corr[ee] *= (1-fatjetCorrUncDown[ee]);
+    }
+    else if(mode == 0) {
+      fatjetPRmassL2L3Corr[aa] *= 1;
+      fatjetPRmassL2L3Corr[ee] *= 1;
+    }
 
     bool passTrigger=false;
     for(int it=0; it< nsize; it++)
@@ -147,12 +149,7 @@ void jms(std::string inputFile) {
 
     if(fatjetPRmassL2L3Corr[aa]<105 || fatjetPRmassL2L3Corr[aa]>135)continue;
     if(fatjetPRmassL2L3Corr[ee]<105 || fatjetPRmassL2L3Corr[ee]>135)continue;
-    if(leadcorrPRmassUp<105 || leadcorrPRmassUp>135)continue;
-    if(sublcorrPRmassUp<105 || sublcorrPRmassUp>135)continue;
-    if(leadcorrPRmassDw<105 || leadcorrPRmassDw>135)continue;
-    if(sublcorrPRmassDw<105 || sublcorrPRmassDw>135)continue;
-
-
+ 
     nPass[5]++;
 
     Double_t leadtau21 = (fatjetTau2[aa]/fatjetTau1[aa]);
@@ -175,23 +172,14 @@ void jms(std::string inputFile) {
 
     nPass[7]++;
  
-    Float_t msubtup = mff-(leadcorrPRmassUp-125)-(sublcorrPRmassUp-125);
-    Float_t msubtdw = mff-(leadcorrPRmassDw-125)-(sublcorrPRmassDw-125);
-
     h_Mjjred1->Fill(msubt);
-    h_Mjjred2->Fill(msubtup);
-    h_Mjjred3->Fill(msubtdw);
-
+ 
   } //end of the event loop
 
   setNCUStyle();
 
-  double lowbin = h_Mjjred2->FindFirstBinAbove(0,1);
-  double highbin = h_Mjjred2->FindLastBinAbove(0,1);
-
-
-
-  //TFile* outfile = new TFile("dbtsf.root","update");
+  double lowbin = h_Mjjred1->FindFirstBinAbove(0,1);
+  double highbin = h_Mjjred1->FindLastBinAbove(0,1);
 
   std::string bulkg_name[]={"1000","1200","1400","1600","1800","2000","2500","3000","4000","4500"};
   std::string radion_name[]={"1000","1200","1400","1600","1800","2000","2500","3000","3500","4500"};
@@ -214,23 +202,23 @@ void jms(std::string inputFile) {
   //float rBR = 0.236958;
 
   h_Mjjred1->Scale((2.6837)/nPass[0]);
-  h_Mjjred2->Scale((2.6837)/nPass[0]);
-  h_Mjjred3->Scale((2.6837)/nPass[0]);
-
-  h_Mjjred4->Scale((2.6837)/nPass[0]);
-  h_Mjjred5->Scale((2.6837)/nPass[0]);
-  h_Mjjred6->Scale((2.6837)/nPass[0]);
 
   bool BulkGrav=(inputFile.find("BulkGrav")!= std::string::npos);
-  /*
-  TFile* outfile = new TFile("jes.root","update");
+
+  TFile* outfile = new TFile("jms.root","update");
   if(BulkGrav) {
     for(int i=0;i<nBM;i++){
       bool bulkmass=(inputFile.find(Form("%s",bulkg_name[i].data()))!= std::string::npos); 
       if(bulkmass) {
-	h_Mjjred1->Write(Form("BulkGravM%s_JES",bulkg_name[i].data()));
-        h_Mjjred2->Write(Form("BulkGravM%s_JESUp",bulkg_name[i].data()));
-        h_Mjjred3->Write(Form("BulkGravM%s_JESDown",bulkg_name[i].data()));
+	if(mode == 0) {
+	  h_Mjjred1->Write(Form("BulkGravM%s_JMS",bulkg_name[i].data()));
+	}
+        else if(mode == 1) {        
+	  h_Mjjred1->Write(Form("BulkGravM%s_JMSUp",bulkg_name[i].data()));
+	}
+        else if(mode == -1) {         
+	  h_Mjjred1->Write(Form("BulkGravM%s_JMSDown",bulkg_name[i].data()));
+	}
 	outfile->Write();
       }
     }
@@ -239,18 +227,23 @@ void jms(std::string inputFile) {
     for(int i=0;i<nRM;i++){
       bool radionmass=(inputFile.find(Form("%s",radion_name[i].data()))!= std::string::npos);
       if(radionmass) {
-	h_Mjjred1->Write(Form("RadionM%s_JES",radion_name[i].data()));
-        h_Mjjred2->Write(Form("RadionM%s_JESUp",radion_name[i].data()));
-        h_Mjjred3->Write(Form("RadionM%s_JESDown",radion_name[i].data()));
+	if(mode == 0) {
+	  h_Mjjred1->Write(Form("RadionM%s_JMS",radion_name[i].data()));
+	}
+	else if(mode == 1) {
+	  h_Mjjred1->Write(Form("RadionM%s_JMSUp",radion_name[i].data()));
+	}
+	else if(mode == -1) {
+	  h_Mjjred1->Write(Form("RadionM%s_JMSDown",radion_name[i].data()));
+	}
 	outfile->Write();
       }
     }
   }
-  */
 
   //---------------------------------------------------------------
 
-
+  /*
   double binwidth = h_Mjjred2->GetBinWidth(lowbin);
   float xlow = (binwidth*lowbin)+(800-(50+100)); //+800 to get to the bin range, -50 to get to the first bin range; -100 for adjustment 
   float xhigh = (binwidth*highbin)+(800+400); //+800 to get to the bin range, +400 for adjustment
@@ -324,7 +317,7 @@ void jms(std::string inputFile) {
   float sys1down = abs(down1-central1)/central1;
 
   cout<<sysmjjred<<" "<<sys1up<<" "<<sys1down<<" "<<endl;
-
+  */
 
 
 

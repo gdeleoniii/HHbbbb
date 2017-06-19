@@ -27,16 +27,22 @@
 
 
 using namespace std;
-void jes(std::string inputFile) {
-  
+void jes(std::string inputFile, int mode) {
+  if(mode == 0) {
+    cout<<"jes is central"<<endl;
+  }
+  else if(mode == 1) {
+    cout<<"jes is up"<<endl;
+  }
+  else if(mode == -1) {
+    cout<<"jes is down"<<endl;
+  }
+
   //get TTree from file ...
   TreeReader data(inputFile.data());
 
   int nbin_mjj = 84;
   TH1F* h_Mjjred1 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred2 =  new TH1F("","",nbin_mjj,800,5000);
-  TH1F* h_Mjjred3 =  new TH1F("","",nbin_mjj,800,5000);
-
 
   Float_t nPass[20]={0};
   
@@ -86,16 +92,20 @@ void jes(std::string inputFile) {
     int ee = fatjet[1]; //Mjj[0].first;                                                                                                                  
     TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa);
     TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
-    TLorentzVector Jet1Up(*Jet1);   
-    TLorentzVector Jet2Up(*Jet2);
-    TLorentzVector Jet1Dw(*Jet1);
-    TLorentzVector Jet2Dw(*Jet2);
 
-    Jet1Up *= (1+fatjetCorrUncUp[aa]);
-    Jet2Up *= (1+fatjetCorrUncUp[ee]);
-    Jet1Dw *= (1-fatjetCorrUncDown[aa]);
-    Jet2Dw *= (1-fatjetCorrUncDown[ee]);
-
+    if(mode == 1) {
+      *Jet1 *= (1+fatjetCorrUncUp[aa]);
+      *Jet2 *= (1+fatjetCorrUncUp[ee]);
+    }
+    else if(mode == -1) {
+      *Jet1 *= (1-fatjetCorrUncDown[aa]);
+      *Jet2 *= (1-fatjetCorrUncDown[ee]);
+    }
+    else if(mode ==0) {
+      *Jet1 *= 1;
+      *Jet2 *= 1;
+      }
+    
     bool passTrigger=false;
     for(int it=0; it< nsize; it++)
       {
@@ -129,26 +139,14 @@ void jes(std::string inputFile) {
 
     if(Jet1->Pt()<200)continue;
     if(Jet2->Pt()<200)continue;
-    if(Jet1Up.Pt()<200)continue;
-    if(Jet2Up.Pt()<200)continue; 
-    if(Jet1Dw.Pt()<200)continue;
-    if(Jet2Dw.Pt()<200)continue;
 
     if(fabs(Jet1->Eta())>2.4)continue;
     if(fabs(Jet2->Eta())>2.4)continue;
-    if(fabs(Jet1Up.Eta())>2.4)continue;
-    if(fabs(Jet2Up.Eta())>2.4)continue;
-    if(fabs(Jet1Dw.Eta())>2.4)continue;
-    if(fabs(Jet2Dw.Eta())>2.4)continue;
 
     nPass[2]++;
 
     Double_t dEta = fabs(Jet1->Eta() - Jet2->Eta());
     if(dEta>1.3)continue;
-    Double_t dEtaUp = fabs(Jet1Up.Eta() - Jet2Up.Eta());
-    if(dEtaUp>1.3)continue;
-    Double_t dEtaDw = fabs(Jet1Dw.Eta() - Jet2Dw.Eta());
-    if(dEtaDw>1.3)continue;
 
     nPass[3]++;
 
@@ -177,46 +175,23 @@ void jes(std::string inputFile) {
       TLorentzVector* Jet3 = (TLorentzVector*)addjetP4->At(ad);
       if(Jet1->DeltaR(*Jet3)<0.1 && addJetIndex[0] < 0) { addJetIndex[0]=ad;} // first add jet to pass the delta r cut
       if(Jet2->DeltaR(*Jet3)<0.1 && addJetIndex[1] < 0) { addJetIndex[1]=ad;} // first add jet to pass the delta r cut
-      if(Jet1Up.DeltaR(*Jet3)<0.1 && addJetIndexUp[0] < 0) { addJetIndexUp[0]=ad;}
-      if(Jet2Up.DeltaR(*Jet3)<0.1 && addJetIndexUp[1] < 0) { addJetIndexUp[1]=ad;}
-      if(Jet1Dw.DeltaR(*Jet3)<0.1 && addJetIndexDw[0] < 0) { addJetIndexDw[0]=ad;}
-      if(Jet2Dw.DeltaR(*Jet3)<0.1 && addJetIndexDw[1] < 0) { addJetIndexDw[1]=ad;}
     }
     if(addJetIndex[0]<0 || addJetIndex[1]<0)continue;
-    if(addJetIndexUp[0]<0 || addJetIndexUp[1]<0)continue;
-    if(addJetIndexDw[0]<0 || addJetIndexDw[1]<0)continue;
 
     if(addjet_doubleSV[addJetIndex[0]]<0.6)continue;
     if(addjet_doubleSV[addJetIndex[1]]<0.6)continue;
-    if(addjet_doubleSV[addJetIndexUp[0]]<0.6)continue;
-    if(addjet_doubleSV[addJetIndexUp[1]]<0.6)continue;
-    if(addjet_doubleSV[addJetIndexDw[0]]<0.6)continue;
-    if(addjet_doubleSV[addJetIndexDw[1]]<0.6)continue;
 
     nPass[7]++;
- 
-    Float_t msubtup = (Jet1Up+Jet2Up).M() - (fatjetPRmassL2L3Corr[aa]-125) - (fatjetPRmassL2L3Corr[ee]-125);
-    Float_t msubtdw = (Jet1Dw+Jet2Dw).M() - (fatjetPRmassL2L3Corr[aa]-125) - (fatjetPRmassL2L3Corr[ee]-125);
-    if(msubtup<800)continue;
-    if(msubtdw<800)continue;
 
     h_Mjjred1->Fill(msubt);
-    h_Mjjred2->Fill(msubtup);
-    h_Mjjred3->Fill(msubtdw);
-
-
 
 
   } //end of the event loop
 
   setNCUStyle();
 
-  double lowbin = h_Mjjred2->FindFirstBinAbove(0,1);
-  double highbin = h_Mjjred2->FindLastBinAbove(0,1);
-
-
-
-  //TFile* outfile = new TFile("dbtsf.root","update");
+  double lowbin = h_Mjjred1->FindFirstBinAbove(0,1);
+  double highbin = h_Mjjred1->FindLastBinAbove(0,1);
 
   std::string bulkg_name[]={"1000","1200","1400","1600","1800","2000","2500","3000","4000","4500"};
   std::string radion_name[]={"1000","1200","1400","1600","1800","2000","2500","3000","3500","4500"};
@@ -239,19 +214,23 @@ void jes(std::string inputFile) {
   //float rBR = 0.236958;
 
   h_Mjjred1->Scale((2.6837)/nPass[0]);
-  h_Mjjred2->Scale((2.6837)/nPass[0]);
-  h_Mjjred3->Scale((2.6837)/nPass[0]);
 
   bool BulkGrav=(inputFile.find("BulkGrav")!= std::string::npos);
-  /*
+  
   TFile* outfile = new TFile("jes.root","update");
   if(BulkGrav) {
     for(int i=0;i<nBM;i++){
       bool bulkmass=(inputFile.find(Form("%s",bulkg_name[i].data()))!= std::string::npos); 
       if(bulkmass) {
-	h_Mjjred1->Write(Form("BulkGravM%s_JES",bulkg_name[i].data()));
-        h_Mjjred2->Write(Form("BulkGravM%s_JESUp",bulkg_name[i].data()));
-        h_Mjjred3->Write(Form("BulkGravM%s_JESDown",bulkg_name[i].data()));
+	if(mode == 0){
+	  h_Mjjred1->Write(Form("BulkGravM%s_JES",bulkg_name[i].data()));
+	}
+	if(mode == 1) {
+	    h_Mjjred1->Write(Form("BulkGravM%s_JESUp",bulkg_name[i].data()));
+	  }
+	if(mode == -1) {
+        h_Mjjred1->Write(Form("BulkGravM%s_JESDown",bulkg_name[i].data()));
+	}
 	outfile->Write();
       }
     }
@@ -260,23 +239,29 @@ void jes(std::string inputFile) {
     for(int i=0;i<nRM;i++){
       bool radionmass=(inputFile.find(Form("%s",radion_name[i].data()))!= std::string::npos);
       if(radionmass) {
-	h_Mjjred1->Write(Form("RadionM%s_JES",radion_name[i].data()));
-        h_Mjjred2->Write(Form("RadionM%s_JESUp",radion_name[i].data()));
-        h_Mjjred3->Write(Form("RadionM%s_JESDown",radion_name[i].data()));
+	if(mode == 0) {
+	  h_Mjjred1->Write(Form("RadionM%s_JES",radion_name[i].data()));
+	}
+	if(mode == 1) {
+	  h_Mjjred1->Write(Form("RadionM%s_JESUp",radion_name[i].data()));
+	}
+	if(mode == -1) {
+	  h_Mjjred1->Write(Form("RadionM%s_JESDown",radion_name[i].data()));
+	}
 	outfile->Write();
       }
     }
   }
-  */
+  
 
   //---------------------------------------------------------------
 
-
-  double binwidth = h_Mjjred2->GetBinWidth(lowbin);
+  /*
+  double binwidth = h_Mjjred1->GetBinWidth(lowbin);
   float xlow = (binwidth*lowbin)+(800-(50+100)); //+800 to get to the bin range, -50 to get to the first bin range; -100 for adjustment 
   float xhigh = (binwidth*highbin)+(800+400); //+800 to get to the bin range, +400 for adjustment
-  float yhigh = 1.1*(h_Mjjred2->GetMaximum());
-  float lowbincont = h_Mjjred2->GetBinContent(lowbin);
+  float yhigh = 1.1*(h_Mjjred1->GetMaximum());
+  float lowbincont = h_Mjjred1->GetBinContent(lowbin);
 
   cout<<xlow<<" "<<xhigh<<" "<<lowbin<<" "<<highbin<<" "<<binwidth<<endl;
   
@@ -299,7 +284,7 @@ void jes(std::string inputFile) {
   h_Mjjred1->SetLineStyle(1);
   h_Mjjred2->SetLineStyle(9);
   h_Mjjred3->SetLineStyle(5);
-  h_Mjjred2->Draw("histsame");
+  //h_Mjjred2->Draw("histsame");
   //h_Mjjred2->GetYaxis()->SetTitle("");
   //h_Mjjred2->GetXaxis()->SetTitle("reduced dijet mass");
   //h_Mjjred2->GetXaxis()->SetTitleSize(0.04);
@@ -308,7 +293,7 @@ void jes(std::string inputFile) {
   h_Mjjred1->SetLineColor(kViolet+2);
   h_Mjjred1->Draw("histsame");
   h_Mjjred3->SetLineColor(kGreen+2);
-  h_Mjjred3->Draw("histsame");
+  // h_Mjjred3->Draw("histsame");
   TLegend *leg1 = new TLegend(0.70, 0.72, 0.97, 0.88);
   leg1->SetBorderSize(0);
   leg1->SetFillColor(0);
@@ -361,6 +346,6 @@ void jes(std::string inputFile) {
     }
   }
   
-
+  */
 
 }
