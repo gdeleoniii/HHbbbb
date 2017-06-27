@@ -35,7 +35,7 @@ void pdfscale(std::string inputFile) {
   int nbin_mjj = 84;
   TH1F* h_Mjjred[9];
   for(int i=0;i<9;i++) {
-    h_Mjjred[i] =  new TH1F("","",nbin_mjj,800,5000);
+    h_Mjjred[i] =  new TH1F("","",50,0,1);
 
   }
   Float_t nPass[20]={0};
@@ -82,8 +82,10 @@ void pdfscale(std::string inputFile) {
 
     for(int i=0;i<109;i++) {
       if(i<9) {
-	scaleb[i] = pdfscaleSysWeight[i];
-	//cout<<" scale before = "<<scaleb[i]<<endl;
+	scaleb[i] += pdfscaleSysWeight[i];
+	if(pdfscaleSysWeight[i]<=0){
+	  cout<<" scale before = "<<pdfscaleSysWeight[i]<<endl;
+	}
       }
       else if(i>= 9) {
 	pdfb[i-9] += pdfscaleSysWeight[i];
@@ -170,11 +172,11 @@ void pdfscale(std::string inputFile) {
     if(addjet_doubleSV[addJetIndex[1]]<0.6)continue;
     nPass[7]++;
 
-    for(int i= 0;i<9;i++) {
-      h_Mjjred[i]->Fill(msubt,scaleb[i]);
-    }
-
     for(int i=0;i<109;i++) {
+      if(i<9) {
+        scalea[i] += pdfscaleSysWeight[i];
+	//cout<<" scale after = "<<pdfscaleSysWeight[i]<<endl;
+      }
       if(i>= 9) {
         pdfa[i-9] += pdfscaleSysWeight[i];
       }
@@ -183,11 +185,6 @@ void pdfscale(std::string inputFile) {
   } //end of the event loop
 
   //setNCUStyle();
-  
-
-  double lowbin = h_Mjjred[2]->FindFirstBinAbove(0,1);
-  double highbin = h_Mjjred[2]->FindLastBinAbove(0,1);
-
   std::string bulkg_name[]={"1000","1200","1400","1600","1800","2000","2500","3000","4000","4500"};
   std::string radion_name[]={"1000","1200","1400","1600","1800","2000","2500","3000","3500","4500"};
   //std::string bulkg_name[]={"1000","1800","2000","2500","3000","4500"};
@@ -208,47 +205,35 @@ void pdfscale(std::string inputFile) {
   //float bBR[6]={0.09869019214731996,0.09957353475983793,0.09961340921364503,0.09966492755238268,0.09968811468551785,0.09971268196476021};
   //float rBR = 0.236958;
 
-  for(int i= 0;i<9;i++) {
-    h_Mjjred[i]->Scale((2.6837)/nPass[0]);
-  }
-
+  
+  
   bool BulkGrav=(inputFile.find("BulkGrav")!= std::string::npos);
-   //-------------------PDF------------------------------------------
+  //-------------------PDF------------------------------------------
   float pdfe[100];
   for(int i=0;i<100;i++) {
     pdfe[i] = pdfa[i]/pdfb[i];
     h_pdf->Fill(pdfe[i]);
-    //cout<<pdfe[i]<<" "<<pdfa[i]<<" "<<pdfb[i]<<endl;
+    cout<<"pdf = "<<pdfe[i]<<" "<<pdfa[i]<<" "<<pdfb[i]<<endl;
   }
-
-
+  
+  
   TCanvas* c =  new TCanvas("c","c",0,0,600,600);
   c->cd();
   h_pdf->Draw();
   //cout<<h_pdf->GetMean()<<" "<<h_pdf->GetRMS()<<" "<<h_pdf->GetRMS()/h_pdf->GetMean()<<endl;
   //------------------------------------------------------------------
-  double binwidth = h_Mjjred[2]->GetBinWidth(lowbin);
-  float xlow = (binwidth*lowbin)+(800-(50+100)); //+800 to get to the bin range, -50 to get to the first bin range; -100 for adjustment 
-  float xhigh = (binwidth*highbin)+(800+400); //+800 to get to the bin range, +400 for adjustment
-  float yhigh = 1.1*(h_Mjjred[2]->GetMaximum());
-  float lowbincont = h_Mjjred[2]->GetBinContent(lowbin);
-
-    
-  TCanvas* c2 =  new TCanvas("c2","c2",0,0,600,600);
-  c2->cd();
   
-  TH1F* hr = c2->DrawFrame(xlow,0,xhigh,yhigh,""); // new TH1F("","",nbin_mjj,xlow,xhigh);
-  hr->GetYaxis()->SetRange(0,yhigh);
-  hr->GetYaxis()->SetTitle("");
-  hr->GetXaxis()->SetTitle("reduced dijet mass");
-  hr->GetXaxis()->SetTitleSize(0.04);
-  hr->GetYaxis()->SetTitleSize(0.04);
-  hr->GetXaxis()->SetLabelSize(0.04);
-  hr->GetYaxis()->SetLabelSize(0.04);
-  hr->Draw();
 
-  double integ[9],sysuncScale[9],mean[9],rms[9];
+  TCanvas* c2 =  new TCanvas("c2","c2",0,0,600,600);
+  h_Mjjred[0]->Draw();
+  double integ[9],sysuncScale[9],mean[9],rms[9], scalee[9];
   for(int i= 0;i<9;i++) {
+    //cout<<scalee[i]<<" "<<scalea[i]<<" "<<scaleb[i]<<endl; 
+    scalee[i] = scalea[i]/scaleb[i];
+    cout<<"scale = "<<scalee[i]<<" "<<scalea[i]<<" "<<scaleb[i]<<endl;
+    h_Mjjred[i]->Fill(scalee[i]);
+  
+
     h_Mjjred[i]->SetLineWidth(2);
     h_Mjjred[i]->SetLineColor(i+1);
     h_Mjjred[i]->SetLineStyle(i+1);
