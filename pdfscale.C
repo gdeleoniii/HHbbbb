@@ -42,7 +42,10 @@ void pdfscale(std::string inputFile) {
   
   TH1F* h_pdf = new TH1F("","",50,0,1);
 
-  Float_t scalea[9],scaleb[9],pdfa[100],pdfb[100];
+  Float_t scalea[9] = {0};
+  Float_t scaleb[9] = {0};
+  Float_t pdfa[100] = {0};
+  Float_t pdfb[100] = {0};
 
   //Event loop
   for(Long64_t jEntry=0; jEntry<data.GetEntriesFast() ;jEntry++){
@@ -209,28 +212,31 @@ void pdfscale(std::string inputFile) {
   
   bool BulkGrav=(inputFile.find("BulkGrav")!= std::string::npos);
   //-------------------PDF------------------------------------------
-  float pdfe[100];
+  float pdfe[100] = {0};
   for(int i=0;i<100;i++) {
     pdfe[i] = pdfa[i]/pdfb[i];
     h_pdf->Fill(pdfe[i]);
-    cout<<"pdf = "<<pdfe[i]<<" "<<pdfa[i]<<" "<<pdfb[i]<<endl;
+    //cout<<"pdf = "<<pdfe[i]<<" "<<pdfa[i]<<" "<<pdfb[i]<<endl;
   }
   
   
   TCanvas* c =  new TCanvas("c","c",0,0,600,600);
   c->cd();
   h_pdf->Draw();
-  //cout<<h_pdf->GetMean()<<" "<<h_pdf->GetRMS()<<" "<<h_pdf->GetRMS()/h_pdf->GetMean()<<endl;
+  cout<<h_pdf->GetMean()<<" "<<h_pdf->GetRMS()<<" "<<h_pdf->GetRMS()/h_pdf->GetMean()<<endl;
   //------------------------------------------------------------------
   
 
   TCanvas* c2 =  new TCanvas("c2","c2",0,0,600,600);
   h_Mjjred[0]->Draw();
-  double integ[9],sysuncScale[9],mean[9],rms[9], scalee[9];
+  double mean[9] ={0};
+  double rms[9]= {0};
+  double scalee[9] = {0};
+
   for(int i= 0;i<9;i++) {
     //cout<<scalee[i]<<" "<<scalea[i]<<" "<<scaleb[i]<<endl; 
     scalee[i] = scalea[i]/scaleb[i];
-    cout<<"scale = "<<scalee[i]<<" "<<scalea[i]<<" "<<scaleb[i]<<endl;
+    //cout<<"scale = "<<scalee[i]<<" "<<scalea[i]<<" "<<scaleb[i]<<endl;
     h_Mjjred[i]->Fill(scalee[i]);
   
 
@@ -238,37 +244,46 @@ void pdfscale(std::string inputFile) {
     h_Mjjred[i]->SetLineColor(i+1);
     h_Mjjred[i]->SetLineStyle(i+1);
     h_Mjjred[i]->Draw("histsame"); 
-    integ[i] = h_Mjjred[i]->Integral();
     mean[i] = h_Mjjred[i]->GetMean();
     rms[i] = h_Mjjred[i]->GetRMS();
   }
   h_Mjjred[0]->SetLineWidth(4);
 
 
-  TLegend *leg1 = new TLegend(0.70, 0.66, 0.97, 0.88);                                                                                                              
+  TLegend *leg1 = new TLegend(0.3, 0.5, 0.97, 0.74);                                                                                                              
   leg1->SetBorderSize(0);                                                                                                                                           
   leg1->SetFillColor(0);                                                                                                                                            
   leg1->SetFillStyle(0);                                                                                                                                            
   leg1->SetTextSize(0.035);
   for(int i= 0;i<9;i++) {
-    leg1->AddEntry(h_Mjjred[i], Form("%i",i), "l");
+    leg1->AddEntry(h_Mjjred[i], Form("%i, mean = %f",i,mean[i]), "l");
   }
   leg1->Draw();
 
-
-
-  for(int i= 0;i<9;i++) {
-    sysuncScale[i] = fabs(integ[0] - integ[i])/integ[0];
-    cout<<"scale uncertainty = "<<sysuncScale[i]<<endl;
-  }
   for(int i= 0;i<9;i++) {
    
-    cout<<"mean = "<<mean[i]<<endl;
+    cout<<"mean["<<i<<"] = "<<mean[i]<<" "<<mean[i] - mean[0]<<endl;
   }
+
+  double temp = 0;
   for(int i= 0;i<9;i++) {
-     cout<<"rms = "<<rms[i]<<endl;
+    if(temp < (fabs(mean[i] - mean[0]))) {temp = fabs(mean[i] - mean[0]);}
   }  
- 
+    cout<<temp<<endl;
+
+    if(BulkGrav) {
+      for(int i=0;i<nBM;i++){
+	bool bulkmass=(inputFile.find(Form("%s",bulkg_name[i].data()))!= std::string::npos);
+	if(bulkmass) {
+	  c2->Print(Form("Scale_SysUnc_BulkGrav_%s.pdf",bulkg_name[i].data()));
+	  c->Print(Form("PDF_SysUnc_BulkGrav_%s.pdf",bulkg_name[i].data()));
+	  //ofstream fout;
+	  //fout.open("bulkg_pdfscale7.dat",ios::out | ios::app);
+	  //fout<<h_pdf->GetRMS()/h_pdf->GetMean()<<" "<<temp<<endl;
+	  //fout.close();
+	}
+      }
+    }
 
 
 }
