@@ -122,7 +122,18 @@ void jer(std::string inputFile, int mode) {
   h_Mjjred1->Sumw2();
 
   Float_t nPass[20]={0};
-  
+
+  //------opening pt resolution text file--------------------
+  int reso = 104;
+  double eta1[reso],eta2[reso],rho1[reso],rho2[reso],echos[reso],pt1[reso],pt2[reso],c0[reso],c1[reso],c2[reso],c3[reso];
+  ifstream fin;
+  fin.open("jer_ptresolution.txt");
+  for(int i=0;i<reso;i++) {
+    fin >> eta1[i] >> eta2[i] >> rho1[i] >> rho2[i] >> echos[i] >> pt1[i] >> pt2[i] >> c0[i] >> c1[i] >> c2[i] >> c3[i];
+  }
+  fin.close();
+  //---------------------------------------------------------
+
   //Event loop
   for(Long64_t jEntry=0; jEntry<data.GetEntriesFast() ;jEntry++){
     
@@ -147,6 +158,7 @@ void jer(std::string inputFile, int mode) {
     Float_t*  fatjetCorrUncUp = data.GetPtrFloat("FATjetCorrUncUp");
     Float_t*  fatjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
     vector<bool>    &FATjetPassIDTight = *((vector<bool>*) data.GetPtr("FATjetPassIDTight"));    
+    Float_t fatjetRho = data.GetFloat("FATjetRho");
 
     TClonesArray* fatgenjetP4 = (TClonesArray*) data.GetPtrTObject("genParP4");
     Int_t nGenPar        = data.GetInt("nGenPar");
@@ -197,6 +209,55 @@ void jer(std::string inputFile, int mode) {
     if(genHIndex[0]==genHIndex[1])continue;
     TClonesArray* genParP4 = (TClonesArray*) data.GetPtrTObject("genParP4");
 
+    /*    //double ptreso;
+    double ptsmearGlobal[3][2];
+    for(int ij=0; ij<2; ij++) {
+      TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
+      TLorentzVector* thisGenJet = (TLorentzVector*)genParP4->At(genHIndex[ij]);
+      double pt_gen = thisGenJet->Pt();
+      double pt_reco   = thisJet->Pt();
+      double eta_reco = thisJet->Eta();
+      double ptreso;
+      for(int g=0;g<reso;g++) {
+	if((eta_reco>eta1[g] && eta_reco<eta2[g]) && (fatjetRho>rho1[g] && fatjetRho<rho2[g]) && (pt_reco>pt1[g] && pt_reco<pt2[g])) {
+	  ptreso = sqrt(c0[g]*abs(c0[g])/(pt_reco*pt_reco)+c1[g]*c1[g]*pow(pt_reco,c3[g])+c2[g]*c2[g]);
+	  cout<<nPass[0]<<" "<<g<<endl;
+	}
+      }
+
+      double jerscalep4[3];
+      double ptsmear[3];
+      jerscalep4[0]= ApplyJERp4(eta_reco,0);
+      jerscalep4[1]= ApplyJERp4(eta_reco,1);
+      jerscalep4[2]= ApplyJERp4(eta_reco,-1);
+      for(int k=0;k<3;k++) { 
+	if((thisJet->DeltaR(*thisGenJet)>0.4) && (abs(pt_reco - pt_gen) < 3*ptreso*pt_reco)) {
+	    ptsmear[k] = 1 + (jerscalep4[k] -1)*((pt_reco -pt_gen)/pt_reco);
+	  }
+	    else {
+	      TRandom* rand = new TRandom();
+	      //double maxi = std::max(jerscalep4[k]*jerscalep4[k] -1,0.0);
+	      ptsmear[k] = 1 + (rand->Gaus(0,ptreso))*sqrt(std::max(jerscalep4[k]*jerscalep4[k] -1,0.0));
+	      delete rand;
+	    }
+	    ptsmearGlobal[k][ij]=ptsmear[k];
+      }
+    }
+    if(mode ==1) {
+      *Jet1 *= ptsmearGlobal[1][0];
+      *Jet2 *= ptsmearGlobal[1][1];
+    }
+    else if(mode == 0) {
+      *Jet1 *= ptsmearGlobal[0][0];
+      *Jet2 *= ptsmearGlobal[0][1];
+    }
+    else if(mode == -1) {
+      *Jet1 *= ptsmearGlobal[2][0];
+      *Jet2 *= ptsmearGlobal[2][1];
+    }
+    */
+
+
     double ptsmearGlobal[3][2];
     bool leadingMatchleading=0;
     for(int ij=0; ij<2; ij++)
@@ -207,7 +268,7 @@ void jer(std::string inputFile, int mode) {
 	TLorentzVector* thisGenJet = (TLorentzVector*)genParP4->At(genHIndex[0]);
 	if(ij==0){
 	  leadingMatchleading=1;
-	  if(thisJet->DeltaR(*thisGenJet)>0.8){
+	  if(thisJet->DeltaR(*thisGenJet)>0.4){
 	    thisGenJet = (TLorentzVector*)genParP4->At(genHIndex[1]);
 	    if(ij==0)leadingMatchleading=0;
 	  }
@@ -233,7 +294,7 @@ void jer(std::string inputFile, int mode) {
       }
 
     if(mode ==1) {
-      *Jet1 *= ptsmearGlobal[1][0];                                                                                                                  
+      *Jet1 *= ptsmearGlobal[1][0]/ptsmearGlobal[0][0];                                                                                                             
       *Jet2 *= ptsmearGlobal[1][1];      
     }
     else if(mode == 0) {
@@ -245,56 +306,6 @@ void jer(std::string inputFile, int mode) {
       *Jet2 *= ptsmearGlobal[2][1];
     }
 
-    /*    vector<int> fatgenjet;
-    
-    for(int ig=0; ig < nGenPar; ig++) {
-      if(abs(genParId[ig])!=25)continue;
-  
-     fatgenjet.push_back(ig);
-    }
-
-    if(fatgenjet.size()<2)continue;
-
-    TLorentzVector* genJet1 = (TLorentzVector*)fatgenjetP4->At(fatgenjet[0]);
-    TLorentzVector* genJet2 = (TLorentzVector*)fatgenjetP4->At(fatgenjet[1]);
-
-
-    if(Jet1->DeltaR(*genJet1)<0.4)continue;
-    if(Jet2->DeltaR(*genJet2)<0.4)continue;
-
-
-    double pt_fatgenjet1 = genJet1->Pt();
-    double pt_fatgenjet2 = genJet2->Pt();
-    double pt_fatjet1 = Jet1->Pt();
-    double pt_fatjet2 = Jet2->Pt();
-    double eta_fatjet1 = Jet1->Eta();
-    double eta_fatjet2 = Jet2->Eta();
-
-    double ptsmear1, ptsmear2;
-    double jerscale1 = ApplyJERp4(eta_fatjet1,mode);
-    double jerscale2 = ApplyJERp4(eta_fatjet2,mode);
-
-
-    if(pt_fatgenjet1 > 0) {ptsmear1 = std::max(0.0, pt_fatgenjet1 + jerscale1*(pt_fatjet1-pt_fatgenjet1)/pt_fatjet1);}
-    else if((jerscale1 > 1) && (pt_fatjet1 > 0 )) {
-      TRandom* rand = new TRandom();
-      ptsmear1 = rand->Gaus(pt_fatjet1, sqrt(jerscale1*jerscale1 - 1)*0.2)/pt_fatjet1;
-      delete rand;
-    }
-
-    if(pt_fatgenjet2 > 0) {ptsmear2 = std::max(0.0, pt_fatgenjet2 + jerscale1*(pt_fatjet2-pt_fatgenjet2)/pt_fatjet2);}
-    else if((jerscale2 > 1) && (pt_fatjet2 > 0 )) {
-      TRandom* rand = new TRandom();
-      ptsmear2 = rand->Gaus(pt_fatjet2, sqrt(jerscale2*jerscale2 - 1)*0.2)/pt_fatjet2;
-      delete rand;
-    }
-
-    //cout<<ptsmear1<<" "<<ptsmear2<<endl;
-
-    *Jet1 *= ptsmear1;
-    *Jet2 *= ptsmear2;
-    */
-    
     bool passTrigger=false;
     for(int it=0; it< nsize; it++)
       {
@@ -368,7 +379,7 @@ void jer(std::string inputFile, int mode) {
     nPass[7]++;
 
 
-    cout<<msubt<<endl;
+    //cout<<msubt<<endl;
     h_Mjjred1->Fill(msubt);
 
 
