@@ -125,11 +125,11 @@ void jer(std::string inputFile, int mode) {
 
   //------opening pt resolution text file--------------------
   int reso = 104;
-  double eta1[reso],eta2[reso],rho1[reso],rho2[reso],echos[reso],pt1[reso],pt2[reso],c0[reso],c1[reso],c2[reso],c3[reso];
+  double eta1[reso],eta2[reso],rho1[reso],rho2[reso],num[reso],pt1[reso],pt2[reso],c0[reso],c1[reso],c2[reso],c3[reso];
   ifstream fin;
   fin.open("jer_ptresolution.txt");
   for(int i=0;i<reso;i++) {
-    fin >> eta1[i] >> eta2[i] >> rho1[i] >> rho2[i] >> echos[i] >> pt1[i] >> pt2[i] >> c0[i] >> c1[i] >> c2[i] >> c3[i];
+    fin >> eta1[i] >> eta2[i] >> rho1[i] >> rho2[i] >> num[i] >> pt1[i] >> pt2[i] >> c0[i] >> c1[i] >> c2[i] >> c3[i];
   }
   fin.close();
   //---------------------------------------------------------
