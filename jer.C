@@ -193,6 +193,10 @@ void jer(std::string inputFile, int mode) {
       TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
       TLorentzVector* thisGenJet = (TLorentzVector*)fatgenjetP4->At(ij);
 
+      if(thisGenJet->E() < 0 || abs(thisGenJet->E()) > 90000) {
+	cout<< ij <<" "<< thisGenJet->E() <<endl;
+      }
+
       if(thisGenJet->E() < 0 || abs(thisGenJet->E()) > 90000)continue;
 
       //cout<< ij <<" "<< thisGenJet->E() <<endl;
@@ -214,13 +218,13 @@ void jer(std::string inputFile, int mode) {
       jerscalep4[1]= ApplyJERp4(eta_reco,1);
       jerscalep4[2]= ApplyJERp4(eta_reco,-1);
       for(int k=0;k<3;k++) { 
-	if((thisJet->DeltaR(*thisGenJet)>0.4) && (abs(pt_reco - pt_gen) < 3*ptreso*pt_reco)) {
+	if((thisJet->DeltaR(*thisGenJet)<0.4) && (abs(pt_reco - pt_gen) < 3*ptreso*pt_reco)) {
 	    ptsmear[k] = 1 + (jerscalep4[k] -1)*((pt_reco -pt_gen)/pt_reco);
 	  }
 	    else {
 	      TRandom* rand = new TRandom();
 	      //double maxi = std::max(jerscalep4[k]*jerscalep4[k] -1,0.0);
-	      ptsmear[k] = 1 + (rand->Gaus(0,ptreso))*sqrt(std::max(jerscalep4[k]*jerscalep4[k] -1,0.0));
+	      ptsmear[k] = 1 + (rand->Gaus(0,ptreso))*sqrt(std::max((jerscalep4[k]*jerscalep4[k]) - 1,0.0));
 	      delete rand;
 	    }
 	    ptsmearGlobal[k][ij]=ptsmear[k];
@@ -244,9 +248,9 @@ void jer(std::string inputFile, int mode) {
       *Jet1 *= ptsmearGlobal[2][0];
       *Jet2 *= ptsmearGlobal[2][1];
     }
-*/
+    */
 
-
+    
     double ptsmearGlobal[3][2];
     bool leadingMatchleading=0;
     for(int ij=0; ij<2; ij++)
@@ -256,10 +260,6 @@ void jer(std::string inputFile, int mode) {
 	TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
 	TLorentzVector* thisGenJet = (TLorentzVector*)fatgenjetP4->At(0);
 
-	if(thisGenJet->E() < 0 || abs(thisGenJet->E()) > 90000)continue;
-
-	cout<< ij <<" "<< thisGenJet->E() <<endl;
-
 	if(ij==0){
 	  leadingMatchleading=1;
 	  if(thisJet->DeltaR(*thisGenJet)>0.4){
@@ -268,6 +268,12 @@ void jer(std::string inputFile, int mode) {
 	  }
 	}
 	if(ij==1 && leadingMatchleading)thisGenJet = (TLorentzVector*)fatgenjetP4->At(1);
+
+	if(thisGenJet->E() < 0 || abs(thisGenJet->E()) > 90000){
+          cout<< ij <<" "<< thisGenJet->E() <<endl;
+        }
+        if(thisGenJet->E() < 0 || abs(thisGenJet->E()) > 90000)continue;
+
 	double pt_gen = thisGenJet->Pt();
 	double pt_reco   = thisJet->Pt() ;
 	double eta_reco = thisJet->Eta() ; 
@@ -304,7 +310,7 @@ void jer(std::string inputFile, int mode) {
       *Jet1 *= ptsmearGlobal[2][0]/ptsmearGlobal[0][0];
       *Jet2 *= ptsmearGlobal[2][1]/ptsmearGlobal[0][1];
     }
-
+    
 
 
     bool passTrigger=false;
