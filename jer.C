@@ -187,7 +187,7 @@ void jer(std::string inputFile, int mode) {
     TLorentzVector* Jet1 = (TLorentzVector*)fatjetP4->At(aa);
     TLorentzVector* Jet2 = (TLorentzVector*)fatjetP4->At(ee);
 
-    /*
+   
     double ptsmearGlobal[3][2];
     for(int ij=0; ij<2; ij++) {
       TLorentzVector* thisJet = (TLorentzVector*)fatjetP4->At(ij);
@@ -228,29 +228,32 @@ void jer(std::string inputFile, int mode) {
 	      delete rand;
 	    }
 	    ptsmearGlobal[k][ij]=ptsmear[k];
-	    if(ptsmearGlobal[k][ij] < 0) {
+	      if(ptsmearGlobal[k][ij] < 0) {
 	      cout<<ptsmearGlobal[k][ij]<<endl;
-	      ptsmearGlobal[k][ij] = 0;
-	    }
+	      ptsmearGlobal[k][ij] = 1;
+	      }
       }
     }
 
 
     if(mode ==1) {
+      if(ptsmearGlobal[1][0]<=0 || ptsmearGlobal[1][1]<=0) {cout<<"negative JER = "<<ptsmearGlobal[1][0]<<" "<<ptsmearGlobal[1][1]<<endl;}
       *Jet1 *= ptsmearGlobal[1][0];
       *Jet2 *= ptsmearGlobal[1][1];
     }
     else if(mode == 0) {
+      if(ptsmearGlobal[0][0]<=0 || ptsmearGlobal[0][1]<=0) {cout<<"negative JER = "<<ptsmearGlobal[0][0]<<" "<<ptsmearGlobal[0][1]<<endl;}
       *Jet1 *= ptsmearGlobal[0][0];
       *Jet2 *= ptsmearGlobal[0][1];
     }
     else if(mode == -1) {
+      if(ptsmearGlobal[2][0]<=0 || ptsmearGlobal[2][1]<=0) {cout<<"negative JER = "<<ptsmearGlobal[2][0]<<" "<<ptsmearGlobal[2][1]<<endl;}
       *Jet1 *= ptsmearGlobal[2][0];
       *Jet2 *= ptsmearGlobal[2][1];
     }
-    */
 
-    
+
+    /* 
     double ptsmearGlobal[3][2];
     bool leadingMatchleading=0;
     for(int ij=0; ij<2; ij++)
@@ -292,7 +295,7 @@ void jer(std::string inputFile, int mode) {
 	  ptsmearGlobal[k][ij]=ptsmear[k] ;
 	  if(ptsmearGlobal[k][ij] < 0) {
 	    cout<<ptsmearGlobal[k][ij]<<endl;
-	    ptsmearGlobal[k][ij] = 0;
+	    ptsmearGlobal[k][ij] = 1;
             }
 	  
 	}
@@ -310,7 +313,7 @@ void jer(std::string inputFile, int mode) {
       *Jet1 *= ptsmearGlobal[2][0]/ptsmearGlobal[0][0];
       *Jet2 *= ptsmearGlobal[2][1]/ptsmearGlobal[0][1];
     }
-    
+*/
 
 
     bool passTrigger=false;
@@ -421,7 +424,7 @@ void jer(std::string inputFile, int mode) {
 
   bool BulkGrav=(inputFile.find("BulkGrav")!= std::string::npos);
   
-  TFile* outfile = new TFile("jer_chingwei.root","update");
+  TFile* outfile = new TFile("jer_official.root","update");
   if(BulkGrav) {
     for(int i=0;i<nBM;i++){
       bool bulkmass=(inputFile.find(Form("%s",bulkg_name[i].data()))!= std::string::npos); 
